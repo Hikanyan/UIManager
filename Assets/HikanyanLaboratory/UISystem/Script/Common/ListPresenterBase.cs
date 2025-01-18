@@ -11,6 +11,13 @@ namespace HikanyanLaboratory.UI
         protected List<TModel> ModelList;
         protected List<UINode> AllCells = new List<UINode>();
 
+
+        public override void OnInitialize()
+        {
+            base.OnInitialize();
+            InitializeAsync(CancellationToken.None).Forget();
+        }
+
         public virtual async UniTask InitializeAsync(CancellationToken ct)
         {
             await UniTask.Yield();

@@ -5,12 +5,10 @@ namespace HikanyanLaboratory.UI
 {
     public class GameManager : MonoBehaviour
     {
+        [PrefabReference(PrefabKeys.Cube)] private GameObject _playerPrefab;
         private void Start()
         {
-            //UIManager.Instance.RegisterPresenter("ExampleMenuScreen", ExampleMenuScreen);
-            //UIManager.Instance.RegisterPresenter("ExamplePopupScreen", ExamplePopupScreenUI);
-
-            UIManager.Instance.OpenPresenter("ExampleMenuScreen");
+            UIManager.Instance.OpenPresenter(PrefabKeys.Cube);
         }
     }
 }

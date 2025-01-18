@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using UnityEngine;
 
 namespace HikanyanLaboratory.UI.Example
 {
@@ -12,6 +13,7 @@ namespace HikanyanLaboratory.UI.Example
         {
             await base.InitializeAsync(ct);
             SetEvent();
+            Debug.Log("<color=green>SampleListPresenter Initialized</color>");
         }
 
         private void SetEvent()

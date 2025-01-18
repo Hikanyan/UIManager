@@ -7,4 +7,7 @@ public static class PrefabKeys
     };
 
     public const string Cube = "Cube";
-}
+public static IEnumerable<string> GetAllKeys()
+        {
+            return _prefabPathDictionary.Keys;
+        }}
