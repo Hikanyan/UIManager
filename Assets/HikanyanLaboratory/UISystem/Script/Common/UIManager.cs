@@ -5,6 +5,8 @@ namespace HikanyanLaboratory.UI
 {
     public class UIManager : MonoBehaviour
     {
+        [SerializeField] private Canvas _rootCanvas;
+        
         public static UIManager Instance { get; private set; }
 
         private readonly Dictionary<string, PresenterBase> _presenters = new Dictionary<string, PresenterBase>();
