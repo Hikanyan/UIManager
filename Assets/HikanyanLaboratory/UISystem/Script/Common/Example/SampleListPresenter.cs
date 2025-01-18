@@ -5,8 +5,11 @@ using UnityEngine;
 
 namespace HikanyanLaboratory.UI.Example
 {
-    public class SampleListPresenter:ListPresenterBase<SampleListView, SampleListItemModel>
+    public class SampleListPresenter : ListPresenterBase<SampleListView, SampleListItemModel>
     {
+        [SerializeField] private SampleListView _view;
+        [SerializeField] private SampleListItemModel _model;
+
         public Action<SampleListCellPresenter> onCellClickedCallback;
 
         public override async UniTask InitializeAsync(CancellationToken ct)

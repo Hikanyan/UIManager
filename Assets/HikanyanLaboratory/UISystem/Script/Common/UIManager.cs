@@ -43,10 +43,7 @@ namespace HikanyanLaboratory.UI
 
         public void RegisterPresenter(string key, UINode presenter)
         {
-            if (!_presenters.ContainsKey(key))
-            {
-                _presenters.Add(key, presenter);
-            }
+            _presenters.TryAdd(key, presenter);
         }
 
         public void OpenPresenter(string key)

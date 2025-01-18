@@ -8,7 +8,7 @@ namespace HikanyanLaboratory.UI
     public abstract class ListPresenterBase<TView, TModel> : ScreenNode
     {
         protected TView View;
-        protected List<TModel> ModelList;
+        protected List<TModel> Model;
         protected List<UINode> AllCells = new List<UINode>();
 
 

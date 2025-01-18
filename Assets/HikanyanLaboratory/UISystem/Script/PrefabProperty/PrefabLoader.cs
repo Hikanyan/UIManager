@@ -87,7 +87,7 @@ namespace HikanyanLaboratory.UI
             }
 
             classContent +=
-                "public static IEnumerable<string> GetAllKeys()\n        {\n            return _prefabPathDictionary.Keys;\n        }";
+                "   public static IEnumerable<string> GetAllKeys()\n    {\n        return _prefabPathDictionary.Keys;\n    }\n";
 
             classContent += "}";
 
