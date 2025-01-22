@@ -72,7 +72,7 @@ namespace HikanyanLaboratory.UI
             string classContent = "using System.Collections.Generic;\n";
             classContent += "public static class PrefabKeys\n{\n";
             classContent +=
-                "    private static Dictionary<string, string> _prefabPathDictionary = new Dictionary<string, string>()\n    {\n";
+                "    private static readonly Dictionary<string, string> PrefabPathDictionary = new Dictionary<string, string>()\n    {\n";
 
             foreach (var entry in PrefabPathDictionary)
             {
@@ -87,7 +87,7 @@ namespace HikanyanLaboratory.UI
             }
 
             classContent +=
-                "   public static IEnumerable<string> GetAllKeys()\n    {\n        return _prefabPathDictionary.Keys;\n    }\n";
+                "    public static IEnumerable<string> GetAllKeys()\n    {\n        return PrefabPathDictionary.Keys;\n    }\n";
 
             classContent += "}";
 
