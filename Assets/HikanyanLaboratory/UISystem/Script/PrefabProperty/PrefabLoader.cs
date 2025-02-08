@@ -88,7 +88,8 @@ namespace HikanyanLaboratory.UI
 
             classContent +=
                 "    public static IEnumerable<string> GetAllKeys()\n    {\n        return PrefabPathDictionary.Keys;\n    }\n";
-
+            classContent +=
+                "    public static string GetPrefabPath(string key)\n    {\n        return PrefabPathDictionary.TryGetValue(key, out var path) ? path : null;\n    }";
             classContent += "}";
 
             File.WriteAllText("Assets/HikanyanLaboratory/UISystem/Script/PrefabProperty/PrefabKeys.cs", classContent);
