@@ -44,7 +44,7 @@ namespace HikanyanLaboratory.UISystemTest
             }
 
             // インスタンスを生成
-            var node = new T();
+            T node = new T();
             initializer?.Invoke(node); // 初期化処理を適用
 
             _activeUiNodes[sceneId] = node;
@@ -59,69 +59,14 @@ namespace HikanyanLaboratory.UISystemTest
             if (_activeUiNodes.TryGetValue(sceneId, out var node) && node is T typedNode)
             {
                 onCloseAction?.Invoke(typedNode); // クローズ前の処理を実行
+                typedNode.OnCloseOut(); // UIを閉じる処理を実行
                 _activeUiNodes.Remove(sceneId);
                 return true;
             }
             return false;
         }
 
-        
-
-        /// <summary>
-        /// シーンを開く
-        /// </summary>
-        public UIScene OpenScene(string sceneId)
-        {
-            if (_activeUiNodes.ContainsKey(sceneId))
-                return (UIScene)_activeUiNodes[sceneId];
-
-            var scene = new UIScene(sceneId);
-            _activeUiNodes[sceneId] = scene;
-            return scene;
-        }
-        public UIScene CloseScene(string sceneId)
-        {
-            if (_activeUiNodes.ContainsKey(sceneId))
-            {
-                _activeUiNodes.Remove(sceneId);
-            }
-            QueuePop(sceneId);
-            return null;
-        }
-
-        /// <summary>
-        /// シーンにウィンドウを追加
-        /// </summary>
-        public UIWindow OpenWindow(UIScene scene, string windowId)
-        {
-            return scene.AddWindow(windowId);
-        }
-        
-        public UIWindow CloseWindow(UIWindow window)
-        {
-            if (window == null) return null;
-            QueuePop(window.Id);
-            return null;
-        }
-
-        /// <summary>
-        /// ウィンドウにスクリーンを追加
-        /// </summary>
-        public UIScreen OpenScreen(UIWindow window, string screenId)
-        {
-            var screenNode = window.AddScreen(screenId);
-            QueuePush(screenId, screenNode);
-            return screenNode;
-        }
-        /// <summary>
-        /// 画面を閉じる
-        /// </summary>
-        public void CloseScreen(UIScreen screenNode)
-        {
-            if (screenNode == null) return;
-            QueuePop(screenNode.Id);
-        }
-
+   
         /// <summary>
         /// 画面をキューに追加（Push）
         /// </summary>

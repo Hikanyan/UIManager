@@ -16,5 +16,4 @@ public static class PrefabKeys
     public static string GetPrefabPath(string key)
     {
         return PrefabPathDictionary.TryGetValue(key, out var path) ? path : null;
-    }
-}
+    }}
