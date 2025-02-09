@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using HikanyanLaboratory.UI;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,22 +8,14 @@ namespace HikanyanLaboratory.UISystemTest
     {
         public static UIManager Instance { get; private set; }
 
-        private UINode _rootNode;
-        private readonly Dictionary<string, Screen> _screenCache = new();
-        private Queue<QueuedScreen> _screenQueue = new();
-        private readonly List<Screen> _screenStack = new();
+        private readonly Dictionary<string, UINode> _activeUiNodes = new();
+        private readonly Queue<QueuedScreen> _screenQueue = new();
+        private readonly List<UIScreen> _screenStack = new();
 
         public bool inputOrderFixEnabled = true;
         private Canvas _rootCanvas;
         private CanvasScaler _canvasScaler;
-
-        private enum UIState
-        {
-            Ready,
-            Push,
-            Pop
-        }
-
+        private enum UIState { Ready, Processing }
         private UIState _state = UIState.Ready;
 
         private void Awake()
@@ -32,7 +23,6 @@ namespace HikanyanLaboratory.UISystemTest
             if (Instance == null)
             {
                 Instance = this;
-                _rootNode = new UINode("Root");
                 _rootCanvas = GetComponent<Canvas>();
                 _canvasScaler = _rootCanvas.GetComponent<CanvasScaler>();
             }
@@ -41,60 +31,170 @@ namespace HikanyanLaboratory.UISystemTest
                 Destroy(gameObject);
             }
         }
-
+        
+        
         /// <summary>
-        /// 画面を開く（キューに追加）
+        /// UIを開く（汎用化 & ラムダ式でデータを挿入）
         /// </summary>
-        public UINode Open(string id, UINode parent = null)
+        public T Open<T>(string sceneId, System.Action<T> initializer = null) where T : UINode, new()
         {
-            parent ??= _rootNode;
-            var newNode = new UINode(id, parent);
-
-            // 画面を取得または生成
-            if (!_screenCache.TryGetValue(id, out var screen))
+            if (_activeUiNodes.ContainsKey(sceneId))
             {
-                screen = LoadScreen(id);
-                _screenCache[id] = screen;
+                return _activeUiNodes[sceneId] as T;
             }
 
-            newNode.SetScreen(screen);
+            // インスタンスを生成
+            var node = new T();
+            initializer?.Invoke(node); // 初期化処理を適用
 
-            screen.gameObject.SetActive(true);
-            screen.OnInitialize();
-            screen.OnOpenIn();
+            _activeUiNodes[sceneId] = node;
+            return node;
+        }
+        
+        /// <summary>
+        /// UIを閉じる（汎用化 & ラムダ式でクローズ処理を実行）
+        /// </summary>
+        public bool Close<T>(string sceneId, System.Action<T> onCloseAction = null) where T : UINode
+        {
+            if (_activeUiNodes.TryGetValue(sceneId, out var node) && node is T typedNode)
+            {
+                onCloseAction?.Invoke(typedNode); // クローズ前の処理を実行
+                _activeUiNodes.Remove(sceneId);
+                return true;
+            }
+            return false;
+        }
 
-            // 既存のトップ画面にフォーカスを失わせる
+        
+
+        /// <summary>
+        /// シーンを開く
+        /// </summary>
+        public UIScene OpenScene(string sceneId)
+        {
+            if (_activeUiNodes.ContainsKey(sceneId))
+                return (UIScene)_activeUiNodes[sceneId];
+
+            var scene = new UIScene(sceneId);
+            _activeUiNodes[sceneId] = scene;
+            return scene;
+        }
+        public UIScene CloseScene(string sceneId)
+        {
+            if (_activeUiNodes.ContainsKey(sceneId))
+            {
+                _activeUiNodes.Remove(sceneId);
+            }
+            QueuePop(sceneId);
+            return null;
+        }
+
+        /// <summary>
+        /// シーンにウィンドウを追加
+        /// </summary>
+        public UIWindow OpenWindow(UIScene scene, string windowId)
+        {
+            return scene.AddWindow(windowId);
+        }
+        
+        public UIWindow CloseWindow(UIWindow window)
+        {
+            if (window == null) return null;
+            QueuePop(window.Id);
+            return null;
+        }
+
+        /// <summary>
+        /// ウィンドウにスクリーンを追加
+        /// </summary>
+        public UIScreen OpenScreen(UIWindow window, string screenId)
+        {
+            var screenNode = window.AddScreen(screenId);
+            QueuePush(screenId, screenNode);
+            return screenNode;
+        }
+        /// <summary>
+        /// 画面を閉じる
+        /// </summary>
+        public void CloseScreen(UIScreen screenNode)
+        {
+            if (screenNode == null) return;
+            QueuePop(screenNode.Id);
+        }
+
+        /// <summary>
+        /// 画面をキューに追加（Push）
+        /// </summary>
+        private void QueuePush(string screenId, UIScreen screenNode)
+        {
+            _screenQueue.Enqueue(new QueuedScreen(screenId, screenNode, true));
+            ProcessQueue();
+        }
+
+        /// <summary>
+        /// 画面をキューに追加（Pop）
+        /// </summary>
+        private void QueuePop(string screenId)
+        {
+            _screenQueue.Enqueue(new QueuedScreen(screenId, null, false));
+            ProcessQueue();
+        }
+
+        /// <summary>
+        /// キューを処理（逐次実行）
+        /// </summary>
+        private void ProcessQueue()
+        {
+            if (_state == UIState.Processing || _screenQueue.Count == 0) return;
+
+            _state = UIState.Processing;
+            var queuedScreen = _screenQueue.Dequeue();
+
+            if (queuedScreen.IsPush)
+            {
+                PushScreen(queuedScreen.ScreenId, queuedScreen.ScreenNode);
+            }
+            else
+            {
+                PopScreen(queuedScreen.ScreenId);
+            }
+
+            _state = UIState.Ready;
+
+            if (_screenQueue.Count > 0)
+            {
+                ProcessQueue();
+            }
+        }
+
+        /// <summary>
+        /// 画面を開く
+        /// </summary>
+        private void PushScreen(string screenId, UIScreen screenNode)
+        {
+            screenNode.OnInitialize();
+            screenNode.OnOpenIn();
+
             if (_screenStack.Count > 0)
             {
                 _screenStack[0].OnCloseIn();
             }
 
-            _screenStack.Insert(0, screen);
+            _screenStack.Insert(0, screenNode);
             FixInputOrder();
-
-            return newNode;
         }
 
         /// <summary>
-        /// 画面を閉じる（キューに追加）
+        /// 画面を閉じる
         /// </summary>
-        public void Close(UINode node)
+        private void PopScreen(string screenId)
         {
-            if (node == null) return;
+            var screen = _screenStack.Find(s => s.Id == screenId);
+            if (screen == null) return;
 
-            if (_screenCache.TryGetValue(node.Id, out var screen))
-            {
-                screen.OnCloseOut();
-                screen.gameObject.SetActive(false);
-                _screenCache.Remove(node.Id);
-            }
+            screen.OnCloseOut();
+            _screenStack.Remove(screen);
 
-            if (node.Parent != null)
-            {
-                node.Parent.RemoveChild(node);
-            }
-
-            // 新しいトップ画面にフォーカスを戻す
             if (_screenStack.Count > 0)
             {
                 _screenStack[0].OnOpenOut();
@@ -102,45 +202,7 @@ namespace HikanyanLaboratory.UISystemTest
         }
 
         /// <summary>
-        /// 画面を切り替える
-        /// </summary>
-        public void Switch(UINode parent, string newId)
-        {
-            var newNode = new UINode(newId, parent);
-
-            if (_screenCache.TryGetValue(parent.Id, out var oldScreen))
-            {
-                oldScreen.OnCloseIn();
-                oldScreen.gameObject.SetActive(false);
-            }
-
-            if (!_screenCache.TryGetValue(newId, out var newScreen))
-            {
-                newScreen = LoadScreen(newId);
-                _screenCache[newId] = newScreen;
-            }
-
-            newNode.SetScreen(newScreen);
-
-            newScreen.gameObject.SetActive(true);
-            newScreen.OnOpenOut();
-
-            parent.SetActiveChild(newNode);
-            FixInputOrder();
-        }
-
-        /// <summary>
-        /// 指定したIDの画面をプレハブからロード
-        /// </summary>
-        private Screen LoadScreen(string id)
-        {
-            string path = PrefabKeys.GetPrefabPath(id);
-            var prefab = Resources.Load<Screen>(path);
-            return Instantiate(prefab, _rootCanvas.transform);
-        }
-
-        /// <summary>
-        /// Unity の UI の入力順序の問題に対処する
+        /// Unity UI の入力順序修正
         /// </summary>
         private void FixInputOrder()
         {
@@ -158,21 +220,21 @@ namespace HikanyanLaboratory.UISystemTest
             }
         }
     }
-}
 
-/// <summary>
-/// キュー内での画面情報を管理するクラス
-/// </summary>
-public class QueuedScreen
-{
-    public string Id { get; private set; }
-    public UINode Parent { get; private set; }
-    public bool IsPush { get; private set; }
-
-    public QueuedScreen(string id, UINode parent, bool isPush)
+    /// <summary>
+    /// 画面遷移用のキュー情報
+    /// </summary>
+    public class QueuedScreen
     {
-        Id = id;
-        Parent = parent;
-        IsPush = isPush;
+        public string ScreenId { get; private set; }
+        public UIScreen ScreenNode { get; private set; }
+        public bool IsPush { get; private set; }
+
+        public QueuedScreen(string screenId, UIScreen screenNode, bool isPush)
+        {
+            ScreenId = screenId;
+            ScreenNode = screenNode;
+            IsPush = isPush;
+        }
     }
 }

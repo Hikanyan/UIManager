@@ -1,36 +1,36 @@
-﻿namespace HikanyanLaboratory.UISystemTest
-{
-    using UnityEngine;
+﻿using UnityEngine;
 
+namespace HikanyanLaboratory.UISystemTest
+{
     public class UITest : MonoBehaviour
     {
-        private UIManager uiManager;
-        private UINode sceneNode;
-        private UINode windowNode;
-        private UINode screenNode1;
-        private UINode screenNode2;
+        private UIManager _uiManager;
+        private UIScene _scene;
+        private UIWindow _window;
+        private UIScreen _screen1;
+        private UIScreen _screen2;
 
         private void Start()
         {
-            uiManager = UIManager.Instance;
+            _uiManager = UIManager.Instance;
 
-            Debug.Log("✅ シーン（Scene）を開く");
-            sceneNode = uiManager.Open(PrefabKeys.Cube);
+            Debug.Log("✅ シーンを開く");
+            _scene = _uiManager.OpenScene(PrefabKeys.MainScene);
 
-            Debug.Log("✅ ウィンドウ（Window）を開く");
-            windowNode = uiManager.Open("MainWindow", sceneNode);
+            Debug.Log("✅ ウィンドウを開く");
+            _window = _uiManager.OpenWindow(_scene, PrefabKeys.MainWindow);
 
-            Debug.Log("✅ 画面1（Screen1）を開く");
-            screenNode1 = uiManager.Open("Screen1", windowNode);
+            Debug.Log("✅ 画面1を開く");
+            _screen1 = _uiManager.OpenScreen(_window, PrefabKeys.Screen1);
 
-            Debug.Log("✅ 画面2（Screen2）を開く（画面1を隠す）");
-            screenNode2 = uiManager.Open("Screen2", windowNode);
+            Debug.Log("✅ 画面2を開く（画面1を隠す）");
+            _screen2 = _uiManager.OpenScreen(_window, PrefabKeys.Screen2);
 
             Debug.Log("✅ 画面2を閉じる（画面1が再びアクティブに）");
-            uiManager.Close(screenNode2);
+            _uiManager.CloseScreen(_screen2);
 
             Debug.Log("✅ ウィンドウを閉じる（シーンだけが残る）");
-            uiManager.Close(windowNode);
+            _uiManager.CloseWindow(_window);
         }
     }
 }
