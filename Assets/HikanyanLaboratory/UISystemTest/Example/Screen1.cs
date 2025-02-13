@@ -6,13 +6,12 @@ namespace HikanyanLaboratory.UISystemTest.Example
 {
     public class Screen1 : UIScreen
     {
-        public Button _switchButton;
+        [SerializeField] Button _switchButton;
 
         public override void OnInitialize()
         {
             Debug.Log("[Screen1] Initialized");
 
-            _switchButton = GameObject.Find("SwitchButton").GetComponent<Button>();
             _switchButton.onClick.AddListener(SwitchToScreen2);
         }
 

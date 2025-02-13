@@ -20,7 +20,6 @@ namespace HikanyanLaboratory.UISystemTest
             if (Instance == null)
             {
                 Instance = this;
-                _rootCanvas = GetComponent<Canvas>();
             }
             else
             {
