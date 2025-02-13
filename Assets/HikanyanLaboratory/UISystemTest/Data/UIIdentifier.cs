@@ -1,7 +1,10 @@
 namespace HikanyanLaboratory.UISystemTest
 {
-    public struct UIIdentifier
+    public enum UIIdentifier
     {
-        
+        MainScene,
+        SettingsWindow,
+        GameScreen,
+        PauseMenu
     }
 }

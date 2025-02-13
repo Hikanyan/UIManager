@@ -1,17 +1,8 @@
-﻿namespace HikanyanLaboratory.UISystemTest
-{
-    public class UIScene : UINode
-    {
-        public UIScene(string id) : base(id, null) { }
+﻿using UnityEngine;
 
-        /// <summary>
-        /// シーンにウィンドウを追加
-        /// </summary>
-        public UIWindow AddWindow(string id)
-        {
-            var window = new UIWindow(id, this);
-            AddChild(window);
-            return window;
-        }
+namespace HikanyanLaboratory.UISystemTest
+{
+    public class UIScene : UINodeBase
+    {
     }
 }

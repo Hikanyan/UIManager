@@ -1,7 +1,8 @@
-﻿namespace HikanyanLaboratory.UISystemTest
+﻿using UnityEngine;
+
+namespace HikanyanLaboratory.UISystemTest
 {
-    public class UIScreen : UINode
+    public class UIScreen : UINodeBase
     {
-        public UIScreen(string id, UIWindow parent) : base(id, parent) { }
     }
 }

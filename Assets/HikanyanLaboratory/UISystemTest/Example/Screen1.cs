@@ -1,20 +1,19 @@
 ﻿using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace HikanyanLaboratory.UISystemTest.Example
 {
     public class Screen1 : UIScreen
     {
-        public Button switchButton;
-
-        public Screen1(UIWindow parent) : base("Screen1", parent) { }
+        public Button _switchButton;
 
         public override void OnInitialize()
         {
             Debug.Log("[Screen1] Initialized");
 
-            switchButton = GameObject.Find("SwitchButton").GetComponent<Button>();
-            switchButton.onClick.AddListener(SwitchToScreen2);
+            _switchButton = GameObject.Find("SwitchButton").GetComponent<Button>();
+            _switchButton.onClick.AddListener(SwitchToScreen2);
         }
 
         public override void OnOpenIn()
@@ -31,9 +30,8 @@ namespace HikanyanLaboratory.UISystemTest.Example
 
         private void SwitchToScreen2()
         {
-            Debug.Log("[Screen1] Switching to Screen2");
-            var window = Parent as MainWindow;
-            window?.OpenScreen2();
+            UIManager.Instance.Open<Screen2>(PrefabKeys.Cube,this);
+            UIManager.Instance.Close<Screen1>();
         }
     }
 }

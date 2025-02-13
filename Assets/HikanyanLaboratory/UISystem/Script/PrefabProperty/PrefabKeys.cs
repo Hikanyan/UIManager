@@ -5,10 +5,16 @@ public static class PrefabKeys
     {
         { Cube, "Assets/HikanyanLaboratory/UIManager/Resources/Cube.prefab" },
         { SampleList, "Assets/HikanyanLaboratory/UISystem/Resources/SampleList.prefab" },
+        { MainScene, "Assets/HikanyanLaboratory/UISystemTest/Resources/MainScene.prefab" },
+        { MainWindow, "Assets/HikanyanLaboratory/UISystemTest/Resources/MainWindow.prefab" },
+        { Screen1, "Assets/HikanyanLaboratory/UISystemTest/Resources/Screen1.prefab" },
     };
 
     public const string Cube = "Cube";
     public const string SampleList = "SampleList";
+    public const string MainScene = "MainScene";
+    public const string MainWindow = "MainWindow";
+    public const string Screen1 = "Screen1";
     public static IEnumerable<string> GetAllKeys()
     {
         return PrefabPathDictionary.Keys;
