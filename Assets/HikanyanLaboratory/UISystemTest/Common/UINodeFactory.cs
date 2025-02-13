@@ -5,7 +5,7 @@ namespace HikanyanLaboratory.UISystemTest
 {
     public static class UINodeFactory
     {
-        public static T Create<T>(string id, string prefabKey, IUINode parent = null) where T : UINodeBase
+        public static T Create<T>( string prefabKey, UINodeBase parent = null) where T : UINodeBase
         {
             GameObject prefab = PrefabLoader.GetPrefab(prefabKey);
             if (prefab == null)
@@ -14,7 +14,8 @@ namespace HikanyanLaboratory.UISystemTest
                 return null;
             }
 
-            GameObject instance = Object.Instantiate(prefab);
+            GameObject instance = Object.Instantiate(prefab,parent?.transform);
+            
             var node = instance.GetComponent<T>();
 
             if (node == null)
@@ -23,7 +24,7 @@ namespace HikanyanLaboratory.UISystemTest
                 return null;
             }
 
-            node.Initialize(id, parent);
+            node.Initialize(instance.GetInstanceID(), parent);
             return node;
         }
     }

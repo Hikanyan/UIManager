@@ -10,7 +10,7 @@ namespace HikanyanLaboratory.UISystemTest
     {
         public static UIManager Instance { get; private set; }
 
-        private readonly Dictionary<string, IUINode> _activeUiNodes = new();
+        private readonly Dictionary<int, IUINode> _activeUiNodes = new();
         private readonly List<IUINode> _uiStack = new();
         [SerializeField] private Canvas _rootCanvas;
         private bool _inputOrderFixEnabled = true;
@@ -28,10 +28,13 @@ namespace HikanyanLaboratory.UISystemTest
             }
         }
 
+        ///public T Open<T, TParent>(string prefabKey, T parent = null) where T : UINodeBase where TParent : Component, IUINode
+        
         /// <summary>
         /// UIを開く（既存のものがあれば最前面に移動）
         /// </summary>
-        public T Open<T>(string prefabKey, IUINode parent = null) where T : UINodeBase
+        public T Open<T>(string prefabKey, UINodeBase parent = null)
+            where T : UINodeBase
         {
             // すでに開いているものがあれば最前面に移動
             foreach (var uiNode in _activeUiNodes.Values)
@@ -43,11 +46,9 @@ namespace HikanyanLaboratory.UISystemTest
                 }
             }
 
-            // ユニークIDを生成
-            string uniqueId = Guid.NewGuid().ToString();
 
             // UINodeFactory でインスタンスを作成
-            var node = UINodeFactory.Create<T>(uniqueId, prefabKey, parent);
+            var node = UINodeFactory.Create<T>(prefabKey, parent);
             if (node == null) return null;
 
             // UI ノードを rootCanvas の下に配置
@@ -57,7 +58,7 @@ namespace HikanyanLaboratory.UISystemTest
             }
 
             // アクティブな UI に追加
-            _activeUiNodes[uniqueId] = node;
+            _activeUiNodes[node.Id] = node;
 
             // 画面を開く（Push）
             PushNode(node);
@@ -67,10 +68,11 @@ namespace HikanyanLaboratory.UISystemTest
 
         /// <summary>
         /// UIを閉じる
+        /// TODO : UINodeBaseのID指定で閉じる
         /// </summary>
         public void Close<T>() where T : UINodeBase
         {
-            string id = _activeUiNodes.FirstOrDefault(x => x.Value is T).Key;
+            int id = _activeUiNodes.FirstOrDefault(x => x.Value is T).Key;
             if (!_activeUiNodes.TryGetValue(id, out var node) || node is not T typedNode) return;
 
             PopNode(typedNode);

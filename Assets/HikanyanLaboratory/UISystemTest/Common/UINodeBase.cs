@@ -5,12 +5,12 @@ namespace HikanyanLaboratory.UISystemTest
 {
     public abstract class UINodeBase : MonoBehaviour, IUINode
     {
-        public string Id { get; private set; }
+        public int Id { get; private set; }
         public IUINode Parent { get; private set; }
         public List<IUINode> Children { get; private set; } = new();
         public bool IsActive { get; protected set; }
 
-        public virtual void Initialize(string id, IUINode parent = null)
+        public virtual void Initialize(int id, IUINode parent = null)
         {
             Id = id;
             Parent = parent;
@@ -51,10 +51,24 @@ namespace HikanyanLaboratory.UISystemTest
             ((UINodeBase)child).IsActive = true;
         }
 
-        public virtual void OnInitialize() { }
-        public virtual void OnOpenIn() { }
-        public virtual void OnCloseIn() { }
-        public virtual void OnOpenOut() { }
-        public virtual void OnCloseOut() { }
+        public virtual void OnInitialize()
+        {
+        }
+
+        public virtual void OnOpenIn()
+        {
+        }
+
+        public virtual void OnCloseIn()
+        {
+        }
+
+        public virtual void OnOpenOut()
+        {
+        }
+
+        public virtual void OnCloseOut()
+        {
+        }
     }
 }
