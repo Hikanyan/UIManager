@@ -6,11 +6,11 @@ namespace HikanyanLaboratory.UISystemTest
     public abstract class UINodeBase : MonoBehaviour, IUINode
     {
         public int Id { get; private set; }
-        public IUINode Parent { get; private set; }
+        public UINodeBase Parent { get; private set; }
         public List<IUINode> Children { get; private set; } = new();
         public bool IsActive { get; protected set; }
 
-        public virtual void Initialize(int id, IUINode parent = null)
+        public virtual void Initialize(int id, UINodeBase parent = null)
         {
             Id = id;
             Parent = parent;
@@ -22,22 +22,18 @@ namespace HikanyanLaboratory.UISystemTest
 
         public void AddChild(IUINode child)
         {
-            if (!Children.Contains(child))
-            {
-                Children.Add(child);
-                SetActiveChild(child);
-            }
+            if (Children.Contains(child)) return;
+            Children.Add(child);
+            SetActiveChild(child);
         }
 
         public void RemoveChild(IUINode child)
         {
-            if (Children.Contains(child))
+            if (!Children.Contains(child)) return;
+            Children.Remove(child);
+            if (Children.Count > 0)
             {
-                Children.Remove(child);
-                if (Children.Count > 0)
-                {
-                    SetActiveChild(Children[^1]); // 最後の要素をアクティブにする
-                }
+                SetActiveChild(Children[^1]); // 最後の要素をアクティブにする
             }
         }
 

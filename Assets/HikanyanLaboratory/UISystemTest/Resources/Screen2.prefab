@@ -36,7 +36,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 129, y: 0}
   m_SizeDelta: {x: 160, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &2733501819611502514
@@ -342,9 +342,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1551049406358160397}
-  - component: {fileID: 740645191499896255}
+  - component: {fileID: 1995328464529924702}
   m_Layer: 5
-  m_Name: Screen1
+  m_Name: Screen2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -366,7 +366,7 @@ Transform:
   - {fileID: 6537304939777901809}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &740645191499896255
+--- !u!114 &1995328464529924702
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -375,7 +375,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 6600379051289255066}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ecce47f719a945aab0397083b9776ff8, type: 3}
+  m_Script: {fileID: 11500000, guid: 1107c6d8a33a4602a4864c40815ce2e8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   _switchButton: {fileID: 3275615437375897273}

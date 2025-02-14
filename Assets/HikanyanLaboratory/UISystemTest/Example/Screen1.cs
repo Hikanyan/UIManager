@@ -29,7 +29,7 @@ namespace HikanyanLaboratory.UISystemTest.Example
 
         private void SwitchToScreen2()
         {
-            UIManager.Instance.Open<Screen2>(PrefabKeys.Cube,this);
+            UIManager.Instance.Open<Screen2>(PrefabKeys.Screen2, Parent);
             UIManager.Instance.Close<Screen1>();
         }
     }

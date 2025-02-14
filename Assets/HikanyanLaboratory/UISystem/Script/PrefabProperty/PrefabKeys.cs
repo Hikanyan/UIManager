@@ -8,6 +8,7 @@ public static class PrefabKeys
         { MainScene, "Assets/HikanyanLaboratory/UISystemTest/Resources/MainScene.prefab" },
         { MainWindow, "Assets/HikanyanLaboratory/UISystemTest/Resources/MainWindow.prefab" },
         { Screen1, "Assets/HikanyanLaboratory/UISystemTest/Resources/Screen1.prefab" },
+        { Screen2, "Assets/HikanyanLaboratory/UISystemTest/Resources/Screen2.prefab" },
     };
 
     public const string Cube = "Cube";
@@ -15,6 +16,7 @@ public static class PrefabKeys
     public const string MainScene = "MainScene";
     public const string MainWindow = "MainWindow";
     public const string Screen1 = "Screen1";
+    public const string Screen2 = "Screen2";
     public static IEnumerable<string> GetAllKeys()
     {
         return PrefabPathDictionary.Keys;

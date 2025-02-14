@@ -6,7 +6,7 @@ namespace HikanyanLaboratory.UISystemTest
     public interface IUINode
     {
         int Id { get; }
-        IUINode Parent { get; }
+        UINodeBase Parent { get; }
         List<IUINode> Children { get; }
         bool IsActive { get; }
 

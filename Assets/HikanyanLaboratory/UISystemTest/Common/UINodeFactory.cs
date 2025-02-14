@@ -5,7 +5,7 @@ namespace HikanyanLaboratory.UISystemTest
 {
     public static class UINodeFactory
     {
-        public static T Create<T>( string prefabKey, UINodeBase parent = null) where T : UINodeBase
+        public static T Create<T>(string prefabKey, UINodeBase parent = null) where T : UINodeBase
         {
             GameObject prefab = PrefabLoader.GetPrefab(prefabKey);
             if (prefab == null)
@@ -14,13 +14,13 @@ namespace HikanyanLaboratory.UISystemTest
                 return null;
             }
 
-            GameObject instance = Object.Instantiate(prefab,parent?.transform);
-            
+            GameObject instance = Object.Instantiate(prefab, parent?.transform);
+
             var node = instance.GetComponent<T>();
 
             if (node == null)
             {
-                Debug.LogError($"Prefab {prefab.name} does not have a {typeof(T).Name} component attached.");
+                Debug.LogError($"<Color=red> {typeof(T).Name} is not found in prefab {prefabKey} </Color>");
                 return null;
             }
 

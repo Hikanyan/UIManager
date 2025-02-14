@@ -12,13 +12,14 @@ namespace HikanyanLaboratory.UISystemTest.Example
         {
             Debug.Log("[Screen2] Initialized");
 
-            _switchButton = GameObject.Find("SwitchButton").GetComponent<Button>();
             _switchButton.onClick.AddListener(SwitchToScreen1);
         }
 
         private void SwitchToScreen1()
         {
             Debug.Log("[Screen2] Switching to Screen1");
+            UIManager.Instance.Open<Screen1>(PrefabKeys.Screen1, Parent);
+            UIManager.Instance.Close<Screen2>();
         }
     }
 }

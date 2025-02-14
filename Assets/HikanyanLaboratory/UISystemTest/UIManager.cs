@@ -28,7 +28,6 @@ namespace HikanyanLaboratory.UISystemTest
         }
 
         ///public T Open<T, TParent>(string prefabKey, T parent = null) where T : UINodeBase where TParent : Component, IUINode
-        
         /// <summary>
         /// UIを開く（既存のものがあれば最前面に移動）
         /// </summary>
@@ -38,11 +37,9 @@ namespace HikanyanLaboratory.UISystemTest
             // すでに開いているものがあれば最前面に移動
             foreach (var uiNode in _activeUiNodes.Values)
             {
-                if (uiNode is T existingNode)
-                {
-                    BringToFront(existingNode);
-                    return existingNode;
-                }
+                if (uiNode is not T existingNode) continue;
+                BringToFront(existingNode);
+                return existingNode;
             }
 
 
@@ -65,18 +62,25 @@ namespace HikanyanLaboratory.UISystemTest
             return node;
         }
 
+
         /// <summary>
-        /// UIを閉じる
-        /// TODO : UINodeBaseのID指定で閉じる
+        /// UIを閉じる（UINodeBaseのID指定で閉じる）
         /// </summary>
         public void Close<T>() where T : UINodeBase
         {
-            int id = _activeUiNodes.FirstOrDefault(x => x.Value is T).Key;
+            // `T` 型の UI を `_activeUiNodes` から検索し、対応する `Id` を取得
+            var entry = _activeUiNodes.FirstOrDefault(x => x.Value is T);
+            int id = entry.Key;
+
+            // 該当する UI が見つからなければ終了
             if (!_activeUiNodes.TryGetValue(id, out var node) || node is not T typedNode) return;
 
             PopNode(typedNode);
+            Destroy(typedNode.gameObject);
             _activeUiNodes.Remove(id);
+            
         }
+
 
         /// <summary>
         /// 画面を開く（Push）
@@ -85,12 +89,7 @@ namespace HikanyanLaboratory.UISystemTest
         {
             uiNode.OnInitialize();
             uiNode.OnOpenIn();
-
-            if (_uiStack.Count > 0)
-            {
-                _uiStack[0].OnCloseIn();
-            }
-
+            uiNode.OnOpenOut();
             _uiStack.Insert(0, uiNode);
             FixInputOrder();
         }
@@ -101,14 +100,9 @@ namespace HikanyanLaboratory.UISystemTest
         private void PopNode(IUINode uiNode)
         {
             if (!_uiStack.Contains(uiNode)) return;
-
+            uiNode.OnCloseIn();
             uiNode.OnCloseOut();
             _uiStack.Remove(uiNode);
-
-            if (_uiStack.Count > 0)
-            {
-                _uiStack[0].OnOpenOut();
-            }
         }
 
         /// <summary>
