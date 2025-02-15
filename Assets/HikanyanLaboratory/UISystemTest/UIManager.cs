@@ -34,6 +34,8 @@ namespace HikanyanLaboratory.UISystemTest
         {
             if (node == null) return;
             _activeUiNodes.TryAdd(node.Id, node);
+            // 画面を開く（Push）
+            PushNode(node);
         }
 
         /// <summary>
@@ -42,7 +44,10 @@ namespace HikanyanLaboratory.UISystemTest
         public void UnregisterNode(UINodeBase node)
         {
             if (node == null) return;
+
             _activeUiNodes.Remove(node.Id);
+            PopNode(node);
+            Destroy(node.gameObject);
         }
 
         /// <summary>
@@ -59,11 +64,9 @@ namespace HikanyanLaboratory.UISystemTest
                 return existingNode;
             }
 
-
             // UINodeFactory でインスタンスを作成
             var node = UINodeFactory.Create<T>(prefabKey, parent);
             if (node == null) return null;
-
             // UI ノードを rootCanvas の下に配置
             if (parent == null)
             {
@@ -72,10 +75,6 @@ namespace HikanyanLaboratory.UISystemTest
 
             // アクティブな UI に追加
             RegisterNode(node);
-
-            // 画面を開く（Push）
-            PushNode(node);
-
             return node;
         }
 
@@ -88,13 +87,9 @@ namespace HikanyanLaboratory.UISystemTest
             // `T` 型の UI を `_activeUiNodes` から検索し、対応する `Id` を取得
             var entry = _activeUiNodes.FirstOrDefault(x => x.Value is T);
             int id = entry.Key;
-
             // 該当する UI が見つからなければ終了
             if (!_activeUiNodes.TryGetValue(id, out var node) || node is not T typedNode) return;
-
-            PopNode(typedNode);
             UnregisterNode(typedNode);
-            Destroy(typedNode.gameObject);
         }
 
 
