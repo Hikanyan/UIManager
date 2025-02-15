@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -9,6 +10,23 @@ namespace HikanyanLaboratory.UISystemTest
         public UINodeBase Parent { get; private set; }
         public List<IUINode> Children { get; private set; } = new();
         public bool IsActive { get; protected set; }
+
+        public void Awake()
+        {
+            Id = gameObject.GetInstanceID();
+            if (Parent == null)
+            {
+                Parent = transform.parent?.GetComponent<UINodeBase>();
+            }
+
+            UIManager.Instance.RegisterNode(this);
+        }
+
+        public void OnDestroy()
+        {
+            UIManager.Instance.UnregisterNode(this);
+        }
+
 
         public virtual void Initialize(int id, UINodeBase parent = null)
         {

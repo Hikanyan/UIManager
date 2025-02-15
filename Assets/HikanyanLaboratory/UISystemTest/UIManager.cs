@@ -27,7 +27,24 @@ namespace HikanyanLaboratory.UISystemTest
             }
         }
 
-        ///public T Open<T, TParent>(string prefabKey, T parent = null) where T : UINodeBase where TParent : Component, IUINode
+        /// <summary>
+        /// UI ノードを `UIManager` に登録
+        /// </summary>
+        public void RegisterNode(UINodeBase node)
+        {
+            if (node == null) return;
+            _activeUiNodes.TryAdd(node.Id, node);
+        }
+
+        /// <summary>
+        /// UI ノードを `UIManager` から削除
+        /// </summary>
+        public void UnregisterNode(UINodeBase node)
+        {
+            if (node == null) return;
+            _activeUiNodes.Remove(node.Id);
+        }
+
         /// <summary>
         /// UIを開く（既存のものがあれば最前面に移動）
         /// </summary>
@@ -54,7 +71,7 @@ namespace HikanyanLaboratory.UISystemTest
             }
 
             // アクティブな UI に追加
-            _activeUiNodes[node.Id] = node;
+            RegisterNode(node);
 
             // 画面を開く（Push）
             PushNode(node);
@@ -76,9 +93,8 @@ namespace HikanyanLaboratory.UISystemTest
             if (!_activeUiNodes.TryGetValue(id, out var node) || node is not T typedNode) return;
 
             PopNode(typedNode);
+            UnregisterNode(typedNode);
             Destroy(typedNode.gameObject);
-            _activeUiNodes.Remove(id);
-            
         }
 
 

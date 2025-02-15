@@ -16,7 +16,7 @@ namespace HikanyanLaboratory.UISystemTest
             _uiManager = UIManager.Instance;
             _scene = _uiManager.Open<MainScene>(PrefabKeys.MainScene);
             _window = _uiManager.Open<MainWindow>(PrefabKeys.MainWindow, _scene);
-            _screen1 = _uiManager.Open<Screen1>(PrefabKeys.Screen1, _window);
+            _uiManager.Open<Screen1>(PrefabKeys.Screen1, _window);
         }
     }
 }
