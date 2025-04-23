@@ -13,12 +13,10 @@ namespace HikanyanLaboratory.UISystemTest
 
         public void Awake()
         {
-            Id = gameObject.GetInstanceID();
             if (Parent == null)
             {
                 Parent = transform.parent?.GetComponent<UINodeBase>();
             }
-
             UIManager.Instance.RegisterNode(this);
         }
 

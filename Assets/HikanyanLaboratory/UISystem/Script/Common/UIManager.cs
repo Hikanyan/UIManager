@@ -6,9 +6,7 @@ namespace HikanyanLaboratory.UI
     public class UIManager : MonoBehaviour
     {
         [SerializeField] private Canvas _rootCanvas;
-
         public static UIManager Instance { get; private set; }
-
         private readonly Dictionary<string, UINode> _presenters = new Dictionary<string, UINode>();
 
         private void Awake()
@@ -17,7 +15,7 @@ namespace HikanyanLaboratory.UI
             {
                 Instance = this;
                 DontDestroyOnLoad(gameObject);
-                AutoRegisterPrefabs();
+                //AutoRegisterPrefabs();
             }
             else
             {

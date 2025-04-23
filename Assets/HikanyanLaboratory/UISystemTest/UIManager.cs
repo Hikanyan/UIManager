@@ -33,7 +33,7 @@ namespace HikanyanLaboratory.UISystemTest
         public void RegisterNode(UINodeBase node)
         {
             if (node == null) return;
-            _activeUiNodes.TryAdd(node.Id, node);
+            _activeUiNodes.TryAdd(node.GetInstanceID(), node);
             // 画面を開く（Push）
             PushNode(node);
         }
