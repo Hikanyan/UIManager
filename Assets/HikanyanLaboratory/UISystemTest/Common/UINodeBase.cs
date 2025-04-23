@@ -4,6 +4,16 @@ using UnityEngine;
 
 namespace HikanyanLaboratory.UISystemTest
 {
+    /// <summary>
+    ///  データを格納するためのクラス
+    /// </summary>
+    public abstract class Parameter
+    {
+    }
+    
+    /// <summary>
+    /// UIViewの基本クラス
+    /// </summary>
     public abstract class UINodeBase : MonoBehaviour, IUINode
     {
         public int Id { get; private set; }
@@ -17,6 +27,9 @@ namespace HikanyanLaboratory.UISystemTest
             {
                 Parent = transform.parent?.GetComponent<UINodeBase>();
             }
+        }
+        public void Start()
+        {
             UIManager.Instance.RegisterNode(this);
         }
 

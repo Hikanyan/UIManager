@@ -24,7 +24,8 @@ namespace HikanyanLaboratory.UISystemTest
                 return null;
             }
 
-            node.Initialize(node.Id, parent);
+            node.Initialize(node.GetInstanceID(), parent);
+
             return node;
         }
     }

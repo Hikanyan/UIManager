@@ -13,7 +13,7 @@ namespace HikanyanLaboratory.UISystemTest
         private readonly Dictionary<int, IUINode> _activeUiNodes = new();
         private readonly List<IUINode> _uiStack = new();
         [SerializeField] private Canvas _rootCanvas;
-        private bool _inputOrderFixEnabled = true;
+        private readonly bool _inputOrderFixEnabled = true;
 
         private void Awake()
         {
@@ -33,7 +33,7 @@ namespace HikanyanLaboratory.UISystemTest
         public void RegisterNode(UINodeBase node)
         {
             if (node == null) return;
-            _activeUiNodes.TryAdd(node.GetInstanceID(), node);
+            _activeUiNodes.TryAdd(node.Id, node);
             // 画面を開く（Push）
             PushNode(node);
         }
@@ -56,14 +56,6 @@ namespace HikanyanLaboratory.UISystemTest
         public T Open<T>(string prefabKey, UINodeBase parent = null)
             where T : UINodeBase
         {
-            // すでに開いているものがあれば最前面に移動
-            foreach (var uiNode in _activeUiNodes.Values)
-            {
-                if (uiNode is not T existingNode) continue;
-                BringToFront(existingNode);
-                return existingNode;
-            }
-
             // UINodeFactory でインスタンスを作成
             var node = UINodeFactory.Create<T>(prefabKey, parent);
             if (node == null) return null;
@@ -74,7 +66,7 @@ namespace HikanyanLaboratory.UISystemTest
             }
 
             // アクティブな UI に追加
-            RegisterNode(node);
+           // RegisterNode(node);
             return node;
         }
 
@@ -85,7 +77,8 @@ namespace HikanyanLaboratory.UISystemTest
         public void Close<T>() where T : UINodeBase
         {
             // `T` 型の UI を `_activeUiNodes` から検索し、対応する `Id` を取得
-            var entry = _activeUiNodes.FirstOrDefault(x => x.Value is T);
+            var entry = _activeUiNodes.FirstOrDefault(x =>
+                x.Value is T);
             int id = entry.Key;
             // 該当する UI が見つからなければ終了
             if (!_activeUiNodes.TryGetValue(id, out var node) || node is not T typedNode) return;
