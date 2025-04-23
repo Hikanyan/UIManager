@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Threading;
+using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
 
@@ -8,7 +9,7 @@ namespace HikanyanLaboratory.UISystemTest.Example
     {
         public Button _switchButton;
 
-        public override void OnInitialize()
+        public override void OnInitialize(CancellationToken cancellationToken)
         {
             Debug.Log("[Screen2] Initialized");
 
@@ -19,7 +20,7 @@ namespace HikanyanLaboratory.UISystemTest.Example
         {
             Debug.Log("[Screen2] Switching to Screen1");
             UIManager.Instance.Open<Screen1>(PrefabKeys.Screen1, Parent);
-            UIManager.Instance.Close<Screen2>();
+            UIManager.Instance.Close(GetInstanceID(), CancellationToken.None);
         }
     }
 }

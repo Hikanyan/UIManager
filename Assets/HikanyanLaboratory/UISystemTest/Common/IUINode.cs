@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading;
 using UnityEngine;
 
 namespace HikanyanLaboratory.UISystemTest
@@ -14,10 +15,10 @@ namespace HikanyanLaboratory.UISystemTest
         void RemoveChild(IUINode child);
         void SetActiveChild(IUINode child);
 
-        void OnInitialize();
-        void OnOpenIn();
-        void OnCloseIn();
-        void OnOpenOut();
-        void OnCloseOut();
+        void OnInitialize(CancellationToken cancellationToken);
+        void OnOpenIn(CancellationToken cancellationToken);
+        void OnCloseIn(CancellationToken cancellationToken);
+        void OnOpenOut(CancellationToken cancellationToken);
+        void OnCloseOut(CancellationToken cancellationToken);
     }
 }

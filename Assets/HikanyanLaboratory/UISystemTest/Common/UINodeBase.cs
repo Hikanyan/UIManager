@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using UnityEngine;
 
 namespace HikanyanLaboratory.UISystemTest
@@ -35,7 +36,7 @@ namespace HikanyanLaboratory.UISystemTest
 
         public void OnDestroy()
         {
-            UIManager.Instance.UnregisterNode(this);
+            UIManager.Instance.UnregisterNode(Id);
         }
 
 
@@ -76,24 +77,36 @@ namespace HikanyanLaboratory.UISystemTest
             ((UINodeBase)child).IsActive = true;
         }
 
-        public virtual void OnInitialize()
+        public virtual void OnInitialize(CancellationToken cancellationToken)
         {
         }
 
-        public virtual void OnOpenIn()
+        public virtual void OnOpenIn(CancellationToken cancellationToken)
         {
         }
 
-        public virtual void OnCloseIn()
+        public virtual void OnCloseIn(CancellationToken cancellationToken)
         {
         }
 
-        public virtual void OnOpenOut()
+        public virtual void OnOpenOut(CancellationToken cancellationToken)
         {
         }
 
-        public virtual void OnCloseOut()
+        public virtual void OnCloseOut(CancellationToken cancellationToken)
         {
         }
     }
+    
+    public abstract class UINodeBase<T> : UINodeBase where T : Parameter, new()
+    {
+        public T Parameter { get; private set; }
+
+        public virtual void Initialize(int id, UINodeBase parent = null, T parameter = null)
+        {
+            base.Initialize(id, parent);
+            Parameter = parameter ?? new T();
+        }
+    }
+    
 }

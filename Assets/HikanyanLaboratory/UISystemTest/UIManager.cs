@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -15,6 +16,7 @@ namespace HikanyanLaboratory.UISystemTest
         [SerializeField] private Canvas _rootCanvas;
         private readonly bool _inputOrderFixEnabled = true;
 
+        
         private void Awake()
         {
             if (Instance == null)
@@ -30,25 +32,23 @@ namespace HikanyanLaboratory.UISystemTest
         /// <summary>
         /// UI ノードを `UIManager` に登録
         /// </summary>
-        public void RegisterNode(UINodeBase node)
+        public void RegisterNode(UINodeBase node, CancellationToken cancellationToken = default)
         {
             if (node == null) return;
             _activeUiNodes.TryAdd(node.Id, node);
-            // 画面を開く（Push）
-            PushNode(node);
+            PushNode(node, cancellationToken);
         }
+
 
         /// <summary>
         /// UI ノードを `UIManager` から削除
         /// </summary>
-        public void UnregisterNode(UINodeBase node)
+        public void UnregisterNode(int id, CancellationToken cancellationToken = default)
         {
-            if (node == null) return;
-
-            _activeUiNodes.Remove(node.Id);
-            PopNode(node);
-            Destroy(node.gameObject);
+            if (!_activeUiNodes.Remove(id, out var node)) return;
+            PopNode(node, cancellationToken);
         }
+
 
         /// <summary>
         /// UIを開く（既存のものがあれば最前面に移動）
@@ -66,7 +66,7 @@ namespace HikanyanLaboratory.UISystemTest
             }
 
             // アクティブな UI に追加
-           // RegisterNode(node);
+            // RegisterNode(node);
             return node;
         }
 
@@ -74,40 +74,39 @@ namespace HikanyanLaboratory.UISystemTest
         /// <summary>
         /// UIを閉じる（UINodeBaseのID指定で閉じる）
         /// </summary>
-        public void Close<T>() where T : UINodeBase
+        public void Close(int uniqueId, CancellationToken cancellationToken)
         {
-            // `T` 型の UI を `_activeUiNodes` から検索し、対応する `Id` を取得
-            var entry = _activeUiNodes.FirstOrDefault(x =>
-                x.Value is T);
-            int id = entry.Key;
-            // 該当する UI が見つからなければ終了
-            if (!_activeUiNodes.TryGetValue(id, out var node) || node is not T typedNode) return;
-            UnregisterNode(typedNode);
+            var closeTarget = _activeUiNodes[uniqueId];
+            if (closeTarget == null) return;
+
+            UnregisterNode(uniqueId);
         }
 
 
         /// <summary>
         /// 画面を開く（Push）
         /// </summary>
-        private void PushNode(IUINode uiNode)
+        private void PushNode(IUINode uiNode, CancellationToken cancellationToken)
         {
-            uiNode.OnInitialize();
-            uiNode.OnOpenIn();
-            uiNode.OnOpenOut();
+            uiNode.OnInitialize(cancellationToken);
+            uiNode.OnOpenIn(cancellationToken);
+            uiNode.OnOpenOut(cancellationToken);
             _uiStack.Insert(0, uiNode);
             FixInputOrder();
         }
 
+
         /// <summary>
         /// 画面を閉じる（Pop）
         /// </summary>
-        private void PopNode(IUINode uiNode)
+        private void PopNode(IUINode uiNode, CancellationToken cancellationToken)
         {
             if (!_uiStack.Contains(uiNode)) return;
-            uiNode.OnCloseIn();
-            uiNode.OnCloseOut();
+            uiNode.OnCloseIn(cancellationToken);
+            uiNode.OnCloseOut(cancellationToken);
             _uiStack.Remove(uiNode);
         }
+
 
         /// <summary>
         /// 画面を最前面に移動
