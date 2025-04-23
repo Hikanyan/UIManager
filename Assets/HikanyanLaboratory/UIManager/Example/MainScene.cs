@@ -1,7 +1,7 @@
 ﻿namespace HikanyanLaboratory.UISystemTest.Example
 {
     /// <summary>
-    /// シーンマネージャー
+    /// シーンマネージャーに登録
     /// </summary>
     public class MainScene : UIScene
     {

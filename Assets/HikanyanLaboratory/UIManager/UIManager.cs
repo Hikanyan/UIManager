@@ -16,7 +16,6 @@ namespace HikanyanLaboratory.UISystemTest
         [SerializeField] private Canvas _rootCanvas;
         private readonly bool _inputOrderFixEnabled = true;
 
-        
         private void Awake()
         {
             if (Instance == null)
@@ -39,49 +38,49 @@ namespace HikanyanLaboratory.UISystemTest
             PushNode(node, cancellationToken);
         }
 
-
         /// <summary>
         /// UI ノードを `UIManager` から削除
         /// </summary>
         public void UnregisterNode(int id, CancellationToken cancellationToken = default)
         {
-            if (!_activeUiNodes.Remove(id, out var node)) return;
-            PopNode(node, cancellationToken);
-        }
+            if (!_activeUiNodes.TryGetValue(id, out var node)) return;
 
+            _activeUiNodes.Remove(id);
+            PopNode(node, cancellationToken);
+
+            if (node is MonoBehaviour monoBehaviour)
+            {
+                Destroy(monoBehaviour.gameObject);
+            }
+        }
 
         /// <summary>
         /// UIを開く（既存のものがあれば最前面に移動）
         /// </summary>
-        public T Open<T>(string prefabKey, UINodeBase parent = null)
+        public T Open<T>(string prefabKey, UINodeBase parent = null, CancellationToken cancellationToken = default)
             where T : UINodeBase
         {
-            // UINodeFactory でインスタンスを作成
             var node = UINodeFactory.Create<T>(prefabKey, parent);
             if (node == null) return null;
-            // UI ノードを rootCanvas の下に配置
+
             if (parent == null)
             {
                 node.transform.SetParent(_rootCanvas.transform, false);
             }
 
-            // アクティブな UI に追加
-            // RegisterNode(node);
             return node;
         }
-
 
         /// <summary>
         /// UIを閉じる（UINodeBaseのID指定で閉じる）
         /// </summary>
         public void Close(int uniqueId, CancellationToken cancellationToken)
         {
-            var closeTarget = _activeUiNodes[uniqueId];
-            if (closeTarget == null) return;
-
-            UnregisterNode(uniqueId);
+            if (_activeUiNodes.TryGetValue(uniqueId, out _))
+            {
+                UnregisterNode(uniqueId, cancellationToken);
+            }
         }
-
 
         /// <summary>
         /// 画面を開く（Push）
@@ -95,7 +94,6 @@ namespace HikanyanLaboratory.UISystemTest
             FixInputOrder();
         }
 
-
         /// <summary>
         /// 画面を閉じる（Pop）
         /// </summary>
@@ -107,11 +105,10 @@ namespace HikanyanLaboratory.UISystemTest
             _uiStack.Remove(uiNode);
         }
 
-
         /// <summary>
         /// 画面を最前面に移動
         /// </summary>
-        private void BringToFront(IUINode node)
+        public void BringToFront(IUINode node)
         {
             if (!_uiStack.Contains(node)) return;
 
