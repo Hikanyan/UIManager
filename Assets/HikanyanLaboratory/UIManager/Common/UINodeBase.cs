@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace HikanyanLaboratory.UISystemTest
@@ -77,24 +79,29 @@ namespace HikanyanLaboratory.UISystemTest
             ((UINodeBase)child).IsActive = true;
         }
 
-        public virtual void OnInitialize(CancellationToken cancellationToken)
+        public virtual async UniTask OnInitialize(CancellationToken cancellationToken)
         {
+            await UniTask.CompletedTask;
         }
 
-        public virtual void OnOpenIn(CancellationToken cancellationToken)
+        public virtual async UniTask OnOpenIn(CancellationToken cancellationToken)
         {
+            await UniTask.CompletedTask;
         }
 
-        public virtual void OnCloseIn(CancellationToken cancellationToken)
+        public virtual async UniTask OnCloseIn(CancellationToken cancellationToken)
         {
+            await UniTask.CompletedTask;
         }
 
-        public virtual void OnOpenOut(CancellationToken cancellationToken)
+        public virtual async UniTask OnOpenOut(CancellationToken cancellationToken)
         {
+            await UniTask.CompletedTask;
         }
 
-        public virtual void OnCloseOut(CancellationToken cancellationToken)
+        public virtual async UniTask OnCloseOut(CancellationToken cancellationToken)
         {
+            await UniTask.CompletedTask;
         }
     }
     
@@ -102,11 +109,16 @@ namespace HikanyanLaboratory.UISystemTest
     {
         public T Parameter { get; private set; }
 
-        public virtual void Initialize(int id, UINodeBase parent = null, T parameter = null)
+        public virtual void SetParameter(T parameter, CancellationToken cancellationToken)
         {
-            base.Initialize(id, parent);
             Parameter = parameter ?? new T();
         }
+
+        public override async UniTask OnInitialize(CancellationToken cancellationToken)
+        {
+            await base.OnInitialize(cancellationToken);
+            // 追加のパラメータ初期化処理はここでオーバーライドされることを想定
+        }
     }
-    
+
 }

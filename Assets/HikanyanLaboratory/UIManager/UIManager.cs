@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,6 +10,38 @@ namespace HikanyanLaboratory.UISystemTest
 {
     public class UIManager : MonoBehaviour
     {
+        public class Handler<T> : IDisposable where T : IUINode
+        {
+            public readonly int UniqueId;
+            public readonly UIManager Manager;
+
+            public Handler(int uniqueId, UIManager manager)
+            {
+                UniqueId = uniqueId;
+                Manager = manager;
+            }
+
+            public async UniTask WaitCloseAsync(CancellationToken cancellationToken)
+            {
+                try
+                {
+                    await UniTask.WaitWhile(() => Manager._activeUiNodes.ContainsKey(UniqueId), cancellationToken: cancellationToken);
+                }
+                catch (OperationCanceledException)
+                {
+                    if (Manager._activeUiNodes.ContainsKey(UniqueId))
+                    {
+                        await Manager.CloseAsync(UniqueId, default);
+                    }
+                }
+            }
+
+            public void Dispose()
+            {
+                Manager?.Close(UniqueId, CancellationToken.None);
+            }
+        }
+
         public static UIManager Instance { get; private set; }
 
         private readonly Dictionary<int, IUINode> _activeUiNodes = new();
@@ -28,25 +61,22 @@ namespace HikanyanLaboratory.UISystemTest
             }
         }
 
-        /// <summary>
-        /// UI ノードを `UIManager` に登録
-        /// </summary>
-        public void RegisterNode(UINodeBase node, CancellationToken cancellationToken = default)
+        public async UniTask<IUINode> RegisterNode(UINodeBase node, CancellationToken cancellationToken = default)
         {
-            if (node == null) return;
-            _activeUiNodes.TryAdd(node.Id, node);
-            PushNode(node, cancellationToken);
+            if (node == null) return null;
+            int id = node.GetInstanceID();
+            node.Initialize(id, node.Parent);
+            _activeUiNodes.TryAdd(id, node);
+            await PushNode(node, cancellationToken);
+            return node;
         }
 
-        /// <summary>
-        /// UI ノードを `UIManager` から削除
-        /// </summary>
+
         public void UnregisterNode(int id, CancellationToken cancellationToken = default)
         {
-            if (!_activeUiNodes.TryGetValue(id, out var node)) return;
+            if (!_activeUiNodes.Remove(id, out var node)) return;
 
-            _activeUiNodes.Remove(id);
-            PopNode(node, cancellationToken);
+            _ = PopNode(node, cancellationToken);
 
             if (node is MonoBehaviour monoBehaviour)
             {
@@ -54,9 +84,6 @@ namespace HikanyanLaboratory.UISystemTest
             }
         }
 
-        /// <summary>
-        /// UIを開く（既存のものがあれば最前面に移動）
-        /// </summary>
         public T Open<T>(string prefabKey, UINodeBase parent = null, CancellationToken cancellationToken = default)
             where T : UINodeBase
         {
@@ -71,43 +98,79 @@ namespace HikanyanLaboratory.UISystemTest
             return node;
         }
 
-        /// <summary>
-        /// UIを閉じる（UINodeBaseのID指定で閉じる）
-        /// </summary>
+        public async UniTask<Handler<T>> OpenAsync<T, TParam>(
+            string prefabKey,
+            TParam parameter,
+            UINodeBase parent = null,
+            CancellationToken cancellationToken = default)
+            where T : UINodeBase<TParam>
+            where TParam : Parameter, new()
+        {
+            var node = UINodeFactory.Create<T>(prefabKey, parent);
+            if (node == null) return null;
+
+            if (parent == null)
+            {
+                node.transform.SetParent(_rootCanvas.transform, false);
+            }
+
+            node.SetParameter(parameter, cancellationToken);
+            await RegisterNode(node, cancellationToken);
+            var handler = new Handler<T>(node.Id, this);
+            return handler;
+        }
+
+
         public void Close(int uniqueId, CancellationToken cancellationToken)
         {
-            if (_activeUiNodes.TryGetValue(uniqueId, out _))
+            if (_activeUiNodes.ContainsKey(uniqueId))
             {
                 UnregisterNode(uniqueId, cancellationToken);
             }
         }
 
-        /// <summary>
-        /// 画面を開く（Push）
-        /// </summary>
-        private void PushNode(IUINode uiNode, CancellationToken cancellationToken)
+        public async UniTask CloseAsync(int uniqueId, CancellationToken cancellationToken)
         {
-            uiNode.OnInitialize(cancellationToken);
-            uiNode.OnOpenIn(cancellationToken);
-            uiNode.OnOpenOut(cancellationToken);
-            _uiStack.Insert(0, uiNode);
-            FixInputOrder();
+            if (_activeUiNodes.TryGetValue(uniqueId, out var node))
+            { 
+                await PopNode(node, cancellationToken);
+                UnregisterNode(uniqueId, cancellationToken);
+            }
+        }
+        private async UniTask PushNode(IUINode uiNode, CancellationToken cancellationToken)
+        {
+            try
+            {
+                await uiNode.OnInitialize(cancellationToken);
+                await uiNode.OnOpenIn(cancellationToken);
+                await uiNode.OnOpenOut(cancellationToken);
+                _uiStack.Insert(0, uiNode);
+                FixInputOrder();
+            }
+            catch (Exception e)
+            {
+                Debug.LogException(e);
+                throw;
+            }
         }
 
-        /// <summary>
-        /// 画面を閉じる（Pop）
-        /// </summary>
-        private void PopNode(IUINode uiNode, CancellationToken cancellationToken)
+        private async UniTask PopNode(IUINode uiNode, CancellationToken cancellationToken)
         {
-            if (!_uiStack.Contains(uiNode)) return;
-            uiNode.OnCloseIn(cancellationToken);
-            uiNode.OnCloseOut(cancellationToken);
-            _uiStack.Remove(uiNode);
+            try
+            {
+                if (!_uiStack.Contains(uiNode)) return;
+                await uiNode.OnCloseIn(cancellationToken);
+                await uiNode.OnCloseOut(cancellationToken);
+                _uiStack.Remove(uiNode);
+            }
+            catch (Exception e)
+            {
+                Debug.LogException(e);
+                throw;
+            }
         }
 
-        /// <summary>
-        /// 画面を最前面に移動
-        /// </summary>
+
         public void BringToFront(IUINode node)
         {
             if (!_uiStack.Contains(node)) return;
@@ -117,9 +180,6 @@ namespace HikanyanLaboratory.UISystemTest
             FixInputOrder();
         }
 
-        /// <summary>
-        /// Unity UI の入力順序修正
-        /// </summary>
         private void FixInputOrder()
         {
             if (!_inputOrderFixEnabled) return;

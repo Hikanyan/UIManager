@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Threading;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace HikanyanLaboratory.UISystemTest
@@ -15,10 +16,10 @@ namespace HikanyanLaboratory.UISystemTest
         void RemoveChild(IUINode child);
         void SetActiveChild(IUINode child);
 
-        void OnInitialize(CancellationToken cancellationToken);
-        void OnOpenIn(CancellationToken cancellationToken);
-        void OnCloseIn(CancellationToken cancellationToken);
-        void OnOpenOut(CancellationToken cancellationToken);
-        void OnCloseOut(CancellationToken cancellationToken);
+        UniTask OnInitialize(CancellationToken cancellationToken);
+        UniTask OnOpenIn(CancellationToken cancellationToken);
+        UniTask OnCloseIn(CancellationToken cancellationToken);
+        UniTask OnOpenOut(CancellationToken cancellationToken);
+        UniTask OnCloseOut(CancellationToken cancellationToken);
     }
 }

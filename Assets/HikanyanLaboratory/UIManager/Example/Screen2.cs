@@ -1,25 +1,41 @@
 ﻿using System.Threading;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace HikanyanLaboratory.UISystemTest.Example
 {
-    public class Screen2 : UIScreen
+    public class Screen2 : UIScreen<Screen2.Screen2Parameter>
     {
-        public Button _switchButton;
-
-        public override void OnInitialize(CancellationToken cancellationToken)
+        public class Screen2Parameter : Parameter
         {
-            Debug.Log("[Screen2] Initialized");
-
-            _switchButton.onClick.AddListener(SwitchToScreen1);
+            public int Value;
         }
 
-        private void SwitchToScreen1()
+        [SerializeField] private Button _switchButton;
+
+        public override UniTask OnInitialize(CancellationToken cancellationToken)
         {
-            Debug.Log("[Screen2] Switching to Screen1");
-            UIManager.Instance.Open<Screen1>(PrefabKeys.Screen1, Parent);
+            Debug.Log($"[Screen2] Initialized. Received value = {Parameter.Value}");
+
+            _switchButton.onClick.AddListener(() =>
+            {
+                SwitchToScreen1().Forget();
+            });
+
+            return UniTask.CompletedTask;
+        }
+
+        private async UniTaskVoid SwitchToScreen1()
+        {
+            var parameter = new Screen1.Screen1Parameter { Value = 42 };
+
+            await UIManager.Instance.OpenAsync<Screen1, Screen1.Screen1Parameter>(
+                PrefabKeys.Screen1,
+                parameter,
+                Parent,
+                CancellationToken.None);
+
             UIManager.Instance.Close(GetInstanceID(), CancellationToken.None);
         }
     }

@@ -1,22 +1,28 @@
-﻿using HikanyanLaboratory.UISystemTest.Example;
+﻿using System.Threading;
+using HikanyanLaboratory.UISystemTest.Example;
 using UnityEngine;
+using Cysharp.Threading.Tasks;
 
 namespace HikanyanLaboratory.UISystemTest
 {
     public class UITest : MonoBehaviour
     {
-        private UIManager _uiManager;
-        private UIScene _scene;
-        private UIWindow _window;
-        private UIScreen _screen1;
-        private UIScreen _screen2;
-
-        private void Start()
+        private async UniTaskVoid Start()
         {
-            _uiManager = UIManager.Instance;
-            _scene = _uiManager.Open<MainScene>(PrefabKeys.MainScene);
-            _window = _uiManager.Open<MainWindow>(PrefabKeys.MainWindow, _scene);
-            _uiManager.Open<Screen1>(PrefabKeys.Screen1, _window);
+            var uiManager = UIManager.Instance;
+
+            // シーンとウィンドウを開く
+            var scene = uiManager.Open<MainScene>(PrefabKeys.MainScene);
+            var window = uiManager.Open<MainWindow>(PrefabKeys.MainWindow, scene);
+
+            // Screen1 を開いてパラメータを渡す
+            var param = new Screen1.Screen1Parameter { Value = 2025 };
+
+            await uiManager.OpenAsync<Screen1, Screen1.Screen1Parameter>(
+                PrefabKeys.Screen1,
+                param,
+                window,
+                CancellationToken.None);
         }
     }
 }
