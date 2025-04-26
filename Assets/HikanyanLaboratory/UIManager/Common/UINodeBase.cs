@@ -33,7 +33,7 @@ namespace HikanyanLaboratory.UISystemTest
         }
         public void Start()
         {
-            UIManager.Instance.RegisterNode(this);
+            _ = UIManager.Instance.RegisterNode(this);
         }
 
         public void OnDestroy()
