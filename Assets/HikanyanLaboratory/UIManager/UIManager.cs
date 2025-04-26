@@ -115,7 +115,6 @@ namespace HikanyanLaboratory.UISystemTest
             }
 
             node.SetParameter(parameter, cancellationToken);
-            await RegisterNode(node, cancellationToken);
             var handler = new Handler<T>(node.Id, this);
             return handler;
         }

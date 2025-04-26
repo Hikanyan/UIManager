@@ -1,5 +1,6 @@
 ﻿using System.Threading;
 using Cysharp.Threading.Tasks;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -12,16 +13,15 @@ namespace HikanyanLaboratory.UISystemTest.Example
             public int Value;
         }
 
+        [SerializeField] private TMP_Text _valueText;
         [SerializeField] private Button _switchButton;
 
         public override UniTask OnInitialize(CancellationToken cancellationToken)
         {
             Debug.Log("[Screen1] Initialized");
 
-            _switchButton.onClick.AddListener(() =>
-            {
-                SwitchToScreen2().Forget();
-            });
+            _valueText.text = Parameter.Value.ToString();
+            _switchButton.onClick.AddListener(() => { SwitchToScreen2().Forget(); });
 
             return UniTask.CompletedTask;
         }
