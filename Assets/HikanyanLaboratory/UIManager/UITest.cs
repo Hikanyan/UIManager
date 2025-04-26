@@ -1,9 +1,9 @@
 ﻿using System.Threading;
-using HikanyanLaboratory.UISystemTest.Example;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
+using HikanyanLaboratory.UISystem.Example;
 
-namespace HikanyanLaboratory.UISystemTest
+namespace HikanyanLaboratory.UISystem
 {
     public class UITest : MonoBehaviour
     {

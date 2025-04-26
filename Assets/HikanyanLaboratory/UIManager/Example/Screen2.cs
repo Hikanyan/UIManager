@@ -4,7 +4,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace HikanyanLaboratory.UISystemTest.Example
+namespace HikanyanLaboratory.UISystem.Example
 {
     public class Screen2 : UIScreen<Screen2.Screen2Parameter>
     {

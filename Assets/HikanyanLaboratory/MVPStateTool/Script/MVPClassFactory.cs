@@ -26,23 +26,32 @@ namespace HikanyanLaboratory.UISystem
         public static void GeneratePresenterClass(string prefabName, string outputPath)
         {
             string className = $"{prefabName}Presenter";
-            string extraContent = $@"
-        using Cysharp.Threading.Tasks;
-        using System.Threading;
+            string filePath = Path.Combine(outputPath, $"{className}.cs");
 
+            string scriptContent = $@"
+using Cysharp.Threading.Tasks;
+using System.Threading;
+
+namespace HikanyanLaboratory.UISystem
+{{
+    public class {className} : PresenterBase<{prefabName}View, {prefabName}Model>
+    {{
         public override UniTask InitializeAsync(CancellationToken ct)
         {{
             return default;
-        }}";
+        }}
+    }}
+}}";
 
-            GenerateClass(className, ": PresenterBase<" + prefabName + "View, " + prefabName + "Model>", outputPath,
-                extraContent);
+            File.WriteAllText(filePath, scriptContent);
+            Debug.Log($"Presenterクラス {className} を {filePath} に生成しました。");
         }
+
 
         public static void GenerateViewClass(string prefabName, string outputPath)
         {
             string className = $"{prefabName}View";
-            GenerateClass(className, ": UIViewBase", outputPath);
+            GenerateClass(className, ": UINodeBase", outputPath);
         }
 
         public static void GenerateModelClass(string prefabName, string outputPath)
@@ -60,7 +69,7 @@ namespace HikanyanLaboratory.UISystem
                 Directory.CreateDirectory(outputPath);
                 Debug.Log($"ディレクトリを作成しました: {outputPath}");
             }
-            
+
             string filePath = Path.Combine(outputPath, $"{className}.cs");
 
             string enumContent = $@"

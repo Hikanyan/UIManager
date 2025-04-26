@@ -3,7 +3,7 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
-namespace HikanyanLaboratory.UISystemTest
+namespace HikanyanLaboratory.UISystem
 {
     public interface IUINode
     {

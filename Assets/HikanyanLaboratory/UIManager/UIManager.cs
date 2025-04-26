@@ -6,7 +6,7 @@ using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace HikanyanLaboratory.UISystemTest
+namespace HikanyanLaboratory.UISystem
 {
     public class UIManager : MonoBehaviour
     {
@@ -72,15 +72,23 @@ namespace HikanyanLaboratory.UISystemTest
         }
 
 
-        public void UnregisterNode(int id, CancellationToken cancellationToken = default)
+        public async void UnregisterNode(int id, CancellationToken cancellationToken = default)
         {
-            if (!_activeUiNodes.Remove(id, out var node)) return;
-
-            _ = PopNode(node, cancellationToken);
-
-            if (node is MonoBehaviour monoBehaviour)
+            try
             {
-                Destroy(monoBehaviour.gameObject);
+                if (!_activeUiNodes.Remove(id, out var node)) return;
+
+                await PopNode(node, cancellationToken);
+
+                if (node is MonoBehaviour monoBehaviour)
+                {
+                    Destroy(monoBehaviour.gameObject);
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.LogException(e);
+                throw;
             }
         }
 

@@ -16,9 +16,17 @@ MonoBehaviour:
   NameSpace: HikanyanLaboratory.UISystem
   WindowStates:
   - MainWindow
-  - SettingsWindow
+  - TitleWindow
   ScreenStates:
   - MainScreen
-  - SettingsScreen
-  WindowGenerators: []
-  ScreenGenerators: []
+  - PopupScreen
+  WindowGenerators:
+  - ScriptName: MainWindowWindow
+    Prefab: {fileID: 0}
+  - ScriptName: TitleWindowWindow
+    Prefab: {fileID: 0}
+  ScreenGenerators:
+  - ScriptName: MainScreenScreen
+    Prefab: {fileID: 0}
+  - ScriptName: PopupScreenScreen
+    Prefab: {fileID: 0}

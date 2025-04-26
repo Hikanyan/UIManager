@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
-namespace HikanyanLaboratory.UISystemTest
+namespace HikanyanLaboratory.UISystem
 {
     /// <summary>
     ///  データを格納するためのクラス
