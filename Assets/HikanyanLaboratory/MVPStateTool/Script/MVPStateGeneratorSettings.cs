@@ -7,6 +7,7 @@ namespace HikanyanLaboratory.MVPStateTool
     public class MVPStateGeneratorSettings : ScriptableObject
     {
         public string OutputDirectory = "Assets/HikanyanLaboratory/UIToolSystem/MVPStateGenerator/Generated";
+        public string TemplatesFolderPath = "Assets/HikanyanLaboratory/UIToolSystem/MVPStateGenerator/Templates";
         public string NameSpace = "HikanyanLaboratory.UISystem";
 
         public List<string> WindowStates = new List<string> { "MainWindow", "SettingsWindow" };
@@ -22,15 +23,17 @@ namespace HikanyanLaboratory.MVPStateTool
         public string ScriptName;
         public GameObject Prefab;
     }
-    
+
     [System.Serializable]
     public class WindowNodeInfo
     {
-        public bool Generate;
+        public bool GenerateEnum = true;
+        public bool GenerateScript = true;
         public string EnumName;
         public string ScriptName;
         public GameObject Prefab;
     }
+
 
     [System.Serializable]
     public class ScreenData
@@ -42,7 +45,8 @@ namespace HikanyanLaboratory.MVPStateTool
     [System.Serializable]
     public class ScreenNodeInfo
     {
-        public bool Generate;
+        public bool GenerateEnum = true;
+        public bool GenerateScript = true;
         public string EnumName;
         public string ScriptName;
         public GameObject Prefab;

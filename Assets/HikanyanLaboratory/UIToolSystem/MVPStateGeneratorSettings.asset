@@ -13,20 +13,20 @@ MonoBehaviour:
   m_Name: MVPStateGeneratorSettings
   m_EditorClassIdentifier: 
   OutputDirectory: Assets/HikanyanLaboratory/UIToolSystem/MVPStateGenerator/Generated
+  TemplatesFolderPath: Assets/HikanyanLaboratory/MVPStateTool/Template
   NameSpace: HikanyanLaboratory.UISystem
   WindowStates:
   - MainWindow
   - TitleWindow
+  - LoginWindow
   ScreenStates:
   - MainScreen
-  - PopupScreen
+  - TitleScreen
   WindowGenerators:
-  - ScriptName: MainWindowWindow
+  - ScriptName: HomeWindow
     Prefab: {fileID: 0}
-  - ScriptName: TitleWindowWindow
+  - ScriptName: NewWindow
     Prefab: {fileID: 0}
-  ScreenGenerators:
-  - ScriptName: MainScreenScreen
+  - ScriptName: NewWindow
     Prefab: {fileID: 0}
-  - ScriptName: PopupScreenScreen
-    Prefab: {fileID: 0}
+  ScreenGenerators: []
