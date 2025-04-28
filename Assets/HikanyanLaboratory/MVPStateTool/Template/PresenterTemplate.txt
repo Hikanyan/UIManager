@@ -1,0 +1,13 @@
+using Cysharp.Threading.Tasks;
+using System.Threading;
+
+namespace #NAMESPACE
+{
+    public class ＃CLASSNAME : PresenterBase<＃PREFABNAMEView, ＃PREFABNAMEMModel>
+    {
+        public override UniTask InitializeAsync(CancellationToken ct)
+        {
+            return default;
+        }
+    }
+}

@@ -53,7 +53,7 @@ namespace HikanyanLaboratory.MVPStateTool
             {
                 Debug.LogWarning("設定ファイルが見つかりません。新規作成します。");
                 _settings = CreateInstance<MVPStateGeneratorSettings>();
-                _settingsPath = "Assets/HikanyanLaboratory/UIToolSystem/MVPStateGeneratorSettings.asset";
+                _settingsPath = "Assets/UIToolSystem/MVPStateGeneratorSettings.asset";
 
                 string directory = Path.GetDirectoryName(_settingsPath);
                 if (!AssetDatabase.IsValidFolder(directory))
