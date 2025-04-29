@@ -49,44 +49,55 @@ namespace HikanyanLaboratory.MVPStateTool
 
         private void SetupWindowList()
         {
-            _windowList = new ReorderableList(_settings.WindowGenerators, typeof(WindowData), true, true, true, true);
+            // WindowNodeInfo にバインドするよう修正！
+            _windowList = new ReorderableList(_windowNodeInfos, typeof(WindowNodeInfo), true, true, true, true);
 
             _windowList.drawHeaderCallback = rect => { EditorGUI.LabelField(rect, "Window Generators"); };
 
             _windowList.drawElementCallback = (rect, index, isActive, isFocused) =>
             {
-                var element = _settings.WindowGenerators[index];
+                var element = _windowNodeInfos[index];
                 rect.y += 2;
-                float halfWidth = rect.width / 2f;
+                float widthUnit = rect.width / 3f;
 
+                // ScriptName
                 element.ScriptName = EditorGUI.TextField(
-                    new Rect(rect.x, rect.y, halfWidth - 5, EditorGUIUtility.singleLineHeight),
+                    new Rect(rect.x, rect.y, widthUnit - 5, EditorGUIUtility.singleLineHeight),
                     element.ScriptName);
 
+                // Prefab
                 element.Prefab = (GameObject)EditorGUI.ObjectField(
-                    new Rect(rect.x + halfWidth + 5, rect.y, halfWidth - 5, EditorGUIUtility.singleLineHeight),
+                    new Rect(rect.x + widthUnit + 5, rect.y, widthUnit - 5, EditorGUIUtility.singleLineHeight),
                     element.Prefab, typeof(GameObject), false);
+
+                // IsGenerated Toggle（WindowNodeInfoには GenerateScript が該当）
+                element.GenerateScript = EditorGUI.Toggle(
+                    new Rect(rect.x + (widthUnit * 2) + 10, rect.y, 20, EditorGUIUtility.singleLineHeight),
+                    element.GenerateScript);
             };
 
             _windowList.onAddCallback = list =>
             {
-                int newIndex = _settings.WindowGenerators.Count + 1;
-                _settings.WindowGenerators.Add(new WindowData
+                _windowNodeInfos.Add(new WindowNodeInfo
                 {
-                    ScriptName = $"NewWindow{newIndex:00}"
+                    GenerateEnum = true,
+                    GenerateScript = true,
+                    ScriptName = $"NewWindow{_windowNodeInfos.Count + 1:00}"
                 });
-                EditorUtility.SetDirty(_settings);
+
+                SaveWindowNodeInfos();
             };
 
             _windowList.onRemoveCallback = list =>
             {
-                if (list.index >= 0 && list.index < _settings.WindowGenerators.Count)
+                if (list.index >= 0 && list.index < _windowNodeInfos.Count)
                 {
-                    _settings.WindowGenerators.RemoveAt(list.index);
-                    EditorUtility.SetDirty(_settings);
+                    _windowNodeInfos.RemoveAt(list.index);
+                    SaveWindowNodeInfos();
                 }
             };
         }
+
 
 
         private void LoadOrCreateSettings()
@@ -708,6 +719,27 @@ namespace HikanyanLaboratory.MVPStateTool
                 }
 
                 _settings.ScreenGeneratorsByWindow.Add(group);
+            }
+
+            EditorUtility.SetDirty(_settings);
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+        }
+
+        private void SaveWindowNodeInfos()
+        {
+            if (_settings == null) return;
+
+            _settings.WindowGenerators.Clear();
+
+            foreach (var nodeInfo in _windowNodeInfos)
+            {
+                _settings.WindowGenerators.Add(new WindowData
+                {
+                    ScriptName = nodeInfo.ScriptName,
+                    Prefab = nodeInfo.Prefab,
+                    IsGenerated = nodeInfo is WindowNodeInfo windowNode ? windowNode.GenerateScript : false
+                });
             }
 
             EditorUtility.SetDirty(_settings);
