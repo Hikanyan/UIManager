@@ -27,13 +27,16 @@ MonoBehaviour:
   WindowGenerators:
   - scriptName: MainWindow
     prefab: {fileID: 8372363194091617616, guid: 031e75454a18c614d944533c377170ab, type: 3}
-    isGenerated: 1
+    isGenerated: 0
   - scriptName: TitleWindow
     prefab: {fileID: 2904171812689683157, guid: 5d15f9414489d6749857fcf72dde363f, type: 3}
-    isGenerated: 1
+    isGenerated: 0
   - scriptName: LoginWindow
     prefab: {fileID: 6243793781135769752, guid: e116e97448d32c64da70e574e95c1203, type: 3}
-    isGenerated: 1
+    isGenerated: 0
+  - scriptName: RankingWindow
+    prefab: {fileID: 0}
+    isGenerated: 0
   ScreenGeneratorsByWindow:
   - ParentWindowName: None
     Screens: []

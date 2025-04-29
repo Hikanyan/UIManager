@@ -9,6 +9,7 @@ public static class PrefabKeys
         { Screen2, "Assets/HikanyanLaboratory/UIManager/Resources/Screen2.prefab" },
         { SampleList, "Assets/HikanyanLaboratory/UISystem/Resources/SampleList.prefab" },
         { LoginWindow, "Assets/HikanyanLaboratory/UIToolSystem/MVPStateGenerator/Generated/LoginWindow/Resources/LoginWindow.prefab" },
+        { RankingWindow, "Assets/HikanyanLaboratory/UIToolSystem/MVPStateGenerator/Generated/RankingWindow/Resources/RankingWindow.prefab" },
         { TitleWindow, "Assets/HikanyanLaboratory/UIToolSystem/MVPStateGenerator/Generated/TitleWindow/Resources/TitleWindow.prefab" },
     };
 
@@ -18,6 +19,7 @@ public static class PrefabKeys
     public const string Screen2 = "Screen2";
     public const string SampleList = "SampleList";
     public const string LoginWindow = "LoginWindow";
+    public const string RankingWindow = "RankingWindow";
     public const string TitleWindow = "TitleWindow";
     public static IEnumerable<string> GetAllKeys()
     {

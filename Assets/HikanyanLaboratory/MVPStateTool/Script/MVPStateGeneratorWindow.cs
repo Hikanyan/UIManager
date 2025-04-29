@@ -82,7 +82,7 @@ namespace HikanyanLaboratory.MVPStateTool
                 {
                     GenerateEnum = true,
                     GenerateScript = true,
-                    ScriptName = $"NewWindow{_windowNodeInfos.Count + 1:00}"
+                    ScriptName = "NewWindow"
                 });
 
                 SaveWindowNodeInfos();
@@ -97,7 +97,6 @@ namespace HikanyanLaboratory.MVPStateTool
                 }
             };
         }
-
 
 
         private void LoadOrCreateSettings()
@@ -418,7 +417,7 @@ namespace HikanyanLaboratory.MVPStateTool
                 _windowNodeInfos.Add(new WindowNodeInfo
                 {
                     GenerateEnum = true,
-                    GenerateScript = true,
+                    GenerateScript = windowData.IsGenerated,
                     EnumName = windowData.ScriptName,
                     ScriptName = windowData.ScriptName,
                     Prefab = windowData.Prefab
@@ -434,6 +433,7 @@ namespace HikanyanLaboratory.MVPStateTool
             };
             _contentContainer.Add(generateButton);
         }
+
 
 
         private void GenerateWindowScripts()
@@ -454,11 +454,28 @@ namespace HikanyanLaboratory.MVPStateTool
                 node.GenerateScript = false;
             }
 
+            SaveWindowNodeInfos();
             EditorUtility.SetDirty(_settings);
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
-
+            ReloadWindowNodeInfos();
             Debug.Log("Windowノードのスクリプトを生成＆保存しました！");
+        }
+
+        private void ReloadWindowNodeInfos()
+        {
+            _windowNodeInfos.Clear();
+            foreach (var windowData in _settings.WindowGenerators)
+            {
+                _windowNodeInfos.Add(new WindowNodeInfo
+                {
+                    GenerateEnum = true,
+                    GenerateScript = windowData.IsGenerated,
+                    EnumName = windowData.ScriptName,
+                    ScriptName = windowData.ScriptName,
+                    Prefab = windowData.Prefab
+                });
+            }
         }
 
 
@@ -738,7 +755,7 @@ namespace HikanyanLaboratory.MVPStateTool
                 {
                     ScriptName = nodeInfo.ScriptName,
                     Prefab = nodeInfo.Prefab,
-                    IsGenerated = nodeInfo is WindowNodeInfo windowNode ? windowNode.GenerateScript : false
+                    IsGenerated = nodeInfo.GenerateScript 
                 });
             }
 
