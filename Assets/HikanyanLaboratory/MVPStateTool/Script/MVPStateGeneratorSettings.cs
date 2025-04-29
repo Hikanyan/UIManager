@@ -22,7 +22,6 @@ namespace HikanyanLaboratory.MVPStateTool
         public List<ScreenDataGroup> ScreenGeneratorsByWindow = new List<ScreenDataGroup>();
     }
 
-    // --- 共通インターフェース定義 ---
     public interface IDataEntry
     {
         string ScriptName { get; set; }
@@ -38,7 +37,6 @@ namespace HikanyanLaboratory.MVPStateTool
         GameObject Prefab { get; set; }
     }
 
-    // --- 出力用データ（生成後に保存するもの） ---
     [System.Serializable]
     public class WindowData : IDataEntry
     {
@@ -63,6 +61,7 @@ namespace HikanyanLaboratory.MVPStateTool
     {
         [SerializeField] private string scriptName;
         [SerializeField] private GameObject prefab;
+        [SerializeField] private bool isGenerated;
 
         public string ScriptName
         {
@@ -75,6 +74,12 @@ namespace HikanyanLaboratory.MVPStateTool
             get => prefab;
             set => prefab = value;
         }
+        
+        public bool IsGenerated
+        {
+            get => isGenerated;
+            set => isGenerated = value;
+        }
     }
     [System.Serializable]
     public class ScreenDataGroup
@@ -83,7 +88,6 @@ namespace HikanyanLaboratory.MVPStateTool
         public List<ScreenData> Screens = new List<ScreenData>();
     }
 
-    // --- UI側で使うノード情報（生成前の管理情報） ---
     [System.Serializable]
     public class WindowNodeInfo : IGeneratorNode
     {
@@ -132,7 +136,7 @@ namespace HikanyanLaboratory.MVPStateTool
         [SerializeField] private string enumName;
         [SerializeField] private string scriptName;
         [SerializeField] private GameObject prefab;
-
+        [SerializeField] private bool isGenerated;
         public bool GenerateEnum
         {
             get => generateEnum;
@@ -161,6 +165,11 @@ namespace HikanyanLaboratory.MVPStateTool
         {
             get => prefab;
             set => prefab = value;
+        }
+        public bool IsGenerated
+        {
+            get => isGenerated;
+            set => isGenerated = value;
         }
     }
 }

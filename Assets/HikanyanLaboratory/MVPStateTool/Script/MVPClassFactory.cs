@@ -201,7 +201,10 @@ namespace HikanyanLaboratory.MVPStateTool
                     Debug.LogError($"Prefab生成に失敗しました: {node.ScriptName}");
                     continue;
                 }
-
+                if (node is ScreenNodeInfo screenNode)
+                {
+                    screenNode.IsGenerated = true;
+                }
                 // --- Viewコンポーネントを追加 ---
                 string viewScriptFullName = $"{nameSpace}.{node.ScriptName}View";
                 var viewType = Type.GetType(viewScriptFullName);
@@ -226,7 +229,33 @@ namespace HikanyanLaboratory.MVPStateTool
                 {
                     Debug.LogWarning($"Viewスクリプトが見つかりませんでした: {viewScriptFullName}");
                 }
+                
+                // --- Presenterコンポーネントも追加 ---
+                string presenterScriptFullName = $"{nameSpace}.{node.ScriptName}Presenter";
+                var presenterType = Type.GetType(presenterScriptFullName);
 
+                if (presenterType != null)
+                {
+                    if (newPrefab.GetComponent(presenterType) == null)
+                    {
+                        try
+                        {
+                            newPrefab.AddComponent(presenterType);
+                            Debug.Log($"PrefabにPresenterコンポーネントを追加しました: {presenterType.Name}");
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.LogError($"PrefabへのPresenterコンポーネント追加エラー（{presenterType.Name}）: {ex.Message}");
+                        }
+                    }
+                }
+                else
+                {
+                    Debug.LogWarning($"Presenterスクリプトが見つかりませんでした: {presenterScriptFullName}");
+                }
+
+                // 最後にPrefab保存
+                PrefabUtility.SavePrefabAsset(newPrefab);
                 // --- 出力リストに登録または更新 ---
                 try
                 {

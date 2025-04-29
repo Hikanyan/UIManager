@@ -33,11 +33,18 @@ MonoBehaviour:
     prefab: {fileID: 7845741290765529689, guid: e116e97448d32c64da70e574e95c1203, type: 3}
   ScreenGeneratorsByWindow:
   - ParentWindowName: None
-    Screens: []
+    Screens:
+    - scriptName: NekoScreen
+      prefab: {fileID: 0}
+      isGenerated: 0
   - ParentWindowName: MainWindow
     Screens:
     - scriptName: NewScreen
       prefab: {fileID: 0}
+      isGenerated: 0
+    - scriptName: NewScreen
+      prefab: {fileID: 0}
+      isGenerated: 0
   - ParentWindowName: TitleWindow
     Screens: []
   - ParentWindowName: LoginWindow
