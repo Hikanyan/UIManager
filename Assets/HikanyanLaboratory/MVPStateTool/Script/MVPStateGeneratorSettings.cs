@@ -18,7 +18,8 @@ namespace HikanyanLaboratory.MVPStateTool
         public List<string> ScreenStates = new List<string> { "MainScreen", "SettingsScreen" };
 
         public List<WindowData> WindowGenerators = new List<WindowData>();
-        public List<ScreenData> ScreenGenerators = new List<ScreenData>();
+        
+        public List<ScreenDataGroup> ScreenGeneratorsByWindow = new List<ScreenDataGroup>();
     }
 
     // --- 共通インターフェース定義 ---
@@ -75,7 +76,12 @@ namespace HikanyanLaboratory.MVPStateTool
             set => prefab = value;
         }
     }
-
+    [System.Serializable]
+    public class ScreenDataGroup
+    {
+        public string ParentWindowName;
+        public List<ScreenData> Screens = new List<ScreenData>();
+    }
 
     // --- UI側で使うノード情報（生成前の管理情報） ---
     [System.Serializable]

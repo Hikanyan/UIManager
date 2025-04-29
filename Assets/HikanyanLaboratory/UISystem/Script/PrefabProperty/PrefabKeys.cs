@@ -8,6 +8,9 @@ public static class PrefabKeys
         { Screen1, "Assets/HikanyanLaboratory/UIManager/Resources/Screen1.prefab" },
         { Screen2, "Assets/HikanyanLaboratory/UIManager/Resources/Screen2.prefab" },
         { SampleList, "Assets/HikanyanLaboratory/UISystem/Resources/SampleList.prefab" },
+        { LoginWindow, "Assets/HikanyanLaboratory/UIToolSystem/MVPStateGenerator/Generated/LoginWindow/Resources/LoginWindow.prefab" },
+        { NewScreen, "Assets/HikanyanLaboratory/UIToolSystem/MVPStateGenerator/Generated/NewScreen/Resources/NewScreen.prefab" },
+        { TitleWindow, "Assets/HikanyanLaboratory/UIToolSystem/MVPStateGenerator/Generated/TitleWindow/Resources/TitleWindow.prefab" },
     };
 
     public const string MainScene = "MainScene";
@@ -15,6 +18,9 @@ public static class PrefabKeys
     public const string Screen1 = "Screen1";
     public const string Screen2 = "Screen2";
     public const string SampleList = "SampleList";
+    public const string LoginWindow = "LoginWindow";
+    public const string NewScreen = "NewScreen";
+    public const string TitleWindow = "TitleWindow";
     public static IEnumerable<string> GetAllKeys()
     {
         return PrefabPathDictionary.Keys;

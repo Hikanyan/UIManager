@@ -25,14 +25,20 @@ MonoBehaviour:
   - MainScreen
   - TitleScreen
   WindowGenerators:
-  - ScriptName: NewWindow
-    Prefab: {fileID: 0}
-  - ScriptName: MainWindow
-    Prefab: {fileID: 0}
-  - ScriptName: NewWindow03
-    Prefab: {fileID: 0}
-  ScreenGenerators:
-  - ScriptName: TestScreen
-    Prefab: {fileID: 8588549584889478944, guid: ef272fe1f3c6e4995aa0a77e2aa6329e, type: 3}
-  - ScriptName: NewScreen
-    Prefab: {fileID: 3696702594618105409, guid: 27c4dbefbd3b04577b769f20a7473fe5, type: 3}
+  - scriptName: MainWindow
+    prefab: {fileID: 1427343702551978131, guid: 031e75454a18c614d944533c377170ab, type: 3}
+  - scriptName: TitleWindow
+    prefab: {fileID: 7315736807965787520, guid: 5d15f9414489d6749857fcf72dde363f, type: 3}
+  - scriptName: LoginWindow
+    prefab: {fileID: 7845741290765529689, guid: e116e97448d32c64da70e574e95c1203, type: 3}
+  ScreenGeneratorsByWindow:
+  - ParentWindowName: None
+    Screens: []
+  - ParentWindowName: MainWindow
+    Screens:
+    - scriptName: NewScreen
+      prefab: {fileID: 0}
+  - ParentWindowName: TitleWindow
+    Screens: []
+  - ParentWindowName: LoginWindow
+    Screens: []

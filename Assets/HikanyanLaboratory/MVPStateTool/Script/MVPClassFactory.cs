@@ -148,7 +148,11 @@ namespace HikanyanLaboratory.MVPStateTool
             where TNode : IGeneratorNode
             where TData : IDataEntry, new()
         {
-            if (nodes == null || nodes.Count == 0) return;
+            if (nodes == null || nodes.Count == 0)
+            {
+                Debug.LogError("ノードリストが空です。スクリプトおよびPrefabを生成できません。");
+                return;
+            }
 
             foreach (var node in nodes)
             {
@@ -165,53 +169,87 @@ namespace HikanyanLaboratory.MVPStateTool
                 string scriptFolder = Path.Combine(baseFolder, "Script");
                 string prefabFolder = Path.Combine(baseFolder, "Resources");
 
-                if (!Directory.Exists(scriptFolder)) Directory.CreateDirectory(scriptFolder);
-                if (!Directory.Exists(prefabFolder)) Directory.CreateDirectory(prefabFolder);
+                try
+                {
+                    if (!Directory.Exists(scriptFolder)) Directory.CreateDirectory(scriptFolder);
+                    if (!Directory.Exists(prefabFolder)) Directory.CreateDirectory(prefabFolder);
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogError($"フォルダ作成エラー: {ex.Message}");
+                    continue;
+                }
 
-                // --- スクリプト作成 ---
-                GenerateViewClass(node.ScriptName, scriptFolder, nameSpace);
-                GenerateModelClass(node.ScriptName, scriptFolder, nameSpace);
-                GeneratePresenterClass(node.ScriptName, scriptFolder, nameSpace);
+                try
+                {
+                    // --- スクリプト作成 ---
+                    GenerateViewClass(node.ScriptName, scriptFolder, nameSpace);
+                    GenerateModelClass(node.ScriptName, scriptFolder, nameSpace);
+                    GeneratePresenterClass(node.ScriptName, scriptFolder, nameSpace);
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogError($"スクリプト生成エラー（{node.ScriptName}）: {ex.Message}");
+                    continue;
+                }
 
                 // --- Prefab作成 ---
                 var newPrefab = CreatePrefabFromTemplate(node.ScriptName, templatePrefab, prefabFolder);
 
-                if (newPrefab != null)
+                if (newPrefab == null)
                 {
-                    string viewScriptFullName = $"{nameSpace}.{node.ScriptName}View";
-                    var viewType = Type.GetType(viewScriptFullName);
-
-                    if (viewType != null && newPrefab.GetComponent(viewType) == null)
-                    {
-                        newPrefab.AddComponent(viewType);
-                        PrefabUtility.SavePrefabAsset(newPrefab);
-                        Debug.Log($"Prefabに Viewコンポーネントを追加しました: {viewType.Name}");
-                    }
-                    else if (viewType == null)
-                    {
-                        Debug.LogWarning($"Viewスクリプトがまだ存在しません: {viewScriptFullName}");
-                    }
+                    Debug.LogError($"Prefab生成に失敗しました: {node.ScriptName}");
+                    continue;
                 }
 
-                // --- 出力リストに登録または更新 ---
-                var existing = outputDataList.Find(x => x.ScriptName == node.ScriptName);
-                if (existing != null)
+                // --- Viewコンポーネントを追加 ---
+                string viewScriptFullName = $"{nameSpace}.{node.ScriptName}View";
+                var viewType = Type.GetType(viewScriptFullName);
+
+                if (viewType != null)
                 {
-                    existing.Prefab = node.Prefab != null ? node.Prefab : newPrefab;
+                    if (newPrefab.GetComponent(viewType) == null)
+                    {
+                        try
+                        {
+                            newPrefab.AddComponent(viewType);
+                            PrefabUtility.SavePrefabAsset(newPrefab);
+                            Debug.Log($"PrefabにViewコンポーネントを追加しました: {viewType.Name}");
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.LogError($"PrefabへのViewコンポーネント追加エラー（{viewType.Name}）: {ex.Message}");
+                        }
+                    }
                 }
                 else
                 {
-                    var newData = new TData
+                    Debug.LogWarning($"Viewスクリプトが見つかりませんでした: {viewScriptFullName}");
+                }
+
+                // --- 出力リストに登録または更新 ---
+                try
+                {
+                    var existing = outputDataList.Find(x => x.ScriptName == node.ScriptName);
+                    if (existing != null)
                     {
-                        ScriptName = node.ScriptName,
-                        Prefab = node.Prefab != null ? node.Prefab : newPrefab
-                    };
-                    outputDataList.Add(newData);
+                        existing.Prefab = node.Prefab != null ? node.Prefab : newPrefab;
+                    }
+                    else
+                    {
+                        var newData = new TData
+                        {
+                            ScriptName = node.ScriptName,
+                            Prefab = node.Prefab != null ? node.Prefab : newPrefab
+                        };
+                        outputDataList.Add(newData);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogError($"出力リスト登録エラー（{node.ScriptName}）: {ex.Message}");
                 }
             }
-
-            // ★注意：ここで SetDirty, SaveAssets, Refresh はやらない！
-            // 必ず呼び出し元（Window側）でやる
         }
     }
 }

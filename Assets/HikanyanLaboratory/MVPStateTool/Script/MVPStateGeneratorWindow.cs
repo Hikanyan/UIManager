@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Unity.VisualScripting;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEditorInternal;
@@ -398,6 +399,19 @@ namespace HikanyanLaboratory.MVPStateTool
         {
             _contentContainer.Clear();
 
+            _windowNodeInfos.Clear();
+            foreach (var windowData in _settings.WindowGenerators)
+            {
+                _windowNodeInfos.Add(new WindowNodeInfo
+                {
+                    GenerateEnum = true,
+                    GenerateScript = true,
+                    EnumName = windowData.ScriptName,
+                    ScriptName = windowData.ScriptName,
+                    Prefab = windowData.Prefab
+                });
+            }
+
             var container = new IMGUIContainer(() => { _windowList?.DoLayoutList(); });
             _contentContainer.Add(container);
 
@@ -407,6 +421,7 @@ namespace HikanyanLaboratory.MVPStateTool
             };
             _contentContainer.Add(generateButton);
         }
+
 
         private void GenerateWindowScripts()
         {
@@ -516,24 +531,42 @@ namespace HikanyanLaboratory.MVPStateTool
 
             _selectedParentWindow = windowDropdown.value;
 
-            // 各Window用の空リスト初期化
             foreach (var windowName in windowNames)
             {
                 _screenNodeInfosByWindow[windowName] = new List<ScreenNodeInfo>();
+            }
+
+            foreach (var group in _settings.ScreenGeneratorsByWindow)
+            {
+                if (!_screenNodeInfosByWindow.ContainsKey(group.ParentWindowName))
+                {
+                    _screenNodeInfosByWindow[group.ParentWindowName] = new List<ScreenNodeInfo>();
+                }
+
+                foreach (var screenData in group.Screens)
+                {
+                    _screenNodeInfosByWindow[group.ParentWindowName].Add(new ScreenNodeInfo
+                    {
+                        EnumName = screenData.ScriptName,
+                        ScriptName = screenData.ScriptName,
+                        Prefab = screenData.Prefab,
+                        GenerateEnum = true,
+                        GenerateScript = true
+                    });
+                }
             }
 
             // リストを入れる専用コンテナ
             var listArea = new VisualElement { name = "ScreenListArea" };
             _contentContainer.Add(listArea);
 
-            // Generateボタンを別で用意（常に一個だけ）
+            // Generateボタン
             var generateButton = new Button(GenerateScreenScripts)
             {
                 text = "Generate Screen Scripts"
             };
             _contentContainer.Add(generateButton);
 
-            // 最初にリスト表示
             RefreshScreenNodeList();
         }
 
@@ -580,8 +613,42 @@ namespace HikanyanLaboratory.MVPStateTool
                     }
                 }
 
+                SaveScreenNodeInfos();
                 listView.RefreshItems();
             };
+
+            listView.itemsRemoved += indices => { SaveScreenNodeInfos(); };
+        }
+
+        private void SaveScreenNodeInfos()
+        {
+            if (_settings == null) return;
+
+            _settings.ScreenGeneratorsByWindow.Clear();
+
+            foreach (var kvp in _screenNodeInfosByWindow)
+            {
+                var group = new ScreenDataGroup
+                {
+                    ParentWindowName = kvp.Key,
+                    Screens = new List<ScreenData>()
+                };
+
+                foreach (var nodeInfo in kvp.Value)
+                {
+                    group.Screens.Add(new ScreenData
+                    {
+                        ScriptName = nodeInfo.ScriptName,
+                        Prefab = nodeInfo.Prefab
+                    });
+                }
+
+                _settings.ScreenGeneratorsByWindow.Add(group);
+            }
+
+            EditorUtility.SetDirty(_settings);
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
         }
 
 
@@ -627,16 +694,36 @@ namespace HikanyanLaboratory.MVPStateTool
         private void GenerateScreenScripts()
         {
             if (_settings == null) return;
-
             if (string.IsNullOrEmpty(_selectedParentWindow)) return;
             if (!_screenNodeInfosByWindow.TryGetValue(_selectedParentWindow, out var screenNodes)) return;
+
+            _settings.ScreenGeneratorsByWindow.Clear();
+            foreach (var kvp in _screenNodeInfosByWindow)
+            {
+                var group = new ScreenDataGroup
+                {
+                    ParentWindowName = kvp.Key,
+                    Screens = new List<ScreenData>()
+                };
+
+                foreach (var nodeInfo in kvp.Value)
+                {
+                    group.Screens.Add(new ScreenData
+                    {
+                        ScriptName = nodeInfo.ScriptName,
+                        Prefab = nodeInfo.Prefab
+                    });
+                }
+
+                _settings.ScreenGeneratorsByWindow.Add(group);
+            }
 
             MVPClassFactory.GenerateScriptsAndPrefabs<ScreenNodeInfo, ScreenData>(
                 screenNodes,
                 _settings.OutputDirectory,
                 _settings.NameSpace,
                 _settings.ScreenTemplatePrefab,
-                _settings.ScreenGenerators
+                new List<ScreenData>()
             );
 
             EditorUtility.SetDirty(_settings);
