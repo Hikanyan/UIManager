@@ -15,6 +15,8 @@ MonoBehaviour:
   OutputDirectory: Assets/HikanyanLaboratory/UIToolSystem/MVPStateGenerator/Generated
   TemplatesFolderPath: Assets/HikanyanLaboratory/MVPStateTool/Template
   NameSpace: HikanyanLaboratory.UISystem
+  WindowTemplatePrefab: {fileID: 0}
+  ScreenTemplatePrefab: {fileID: 0}
   WindowStates:
   - MainWindow
   - TitleWindow
@@ -23,10 +25,8 @@ MonoBehaviour:
   - MainScreen
   - TitleScreen
   WindowGenerators:
-  - ScriptName: HomeWindow
+  - ScriptName: 
     Prefab: {fileID: 0}
-  - ScriptName: NewWindow
+  ScreenGenerators:
+  - ScriptName: DailyScreen
     Prefab: {fileID: 0}
-  - ScriptName: NewWindow
-    Prefab: {fileID: 0}
-  ScreenGenerators: []

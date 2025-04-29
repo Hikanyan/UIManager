@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using UnityEditor;
 using UnityEngine;
 
 namespace HikanyanLaboratory.MVPStateTool
@@ -48,7 +49,7 @@ namespace HikanyanLaboratory.MVPStateTool
                 { "NAMESPACE", nameSpace },
                 { "CLASSNAME", $"{prefabName}Presenter" },
                 { "PREFABNAME", prefabName },
-                { "PREFABNAMEMModel", prefabName }
+                { "PREFABNAMEModel", prefabName }
             };
 
             GenerateFromTemplate("PresenterTemplate.txt", outputPath, replacements);
@@ -95,6 +96,43 @@ namespace HikanyanLaboratory.MVPStateTool
             };
 
             GenerateFromTemplate("EnumTemplate.txt", outputPath, replacements);
+        }
+        public static GameObject CreatePrefabFromTemplate(string prefabName, GameObject templatePrefab, string saveFolderPath)
+        {
+            if (templatePrefab == null)
+            {
+                Debug.LogError("テンプレートPrefabが設定されていません。");
+                return null;
+            }
+
+            // 生成先のフォルダ確認＆作成
+            if (!Directory.Exists(saveFolderPath))
+            {
+                Directory.CreateDirectory(saveFolderPath);
+                AssetDatabase.Refresh();
+            }
+
+            // テンプレートPrefabをインスタンス化
+            var instance = PrefabUtility.InstantiatePrefab(templatePrefab) as GameObject;
+            if (instance == null)
+            {
+                Debug.LogError("Prefabのインスタンス化に失敗しました。");
+                return null;
+            }
+
+            // 名前を指定
+            instance.name = prefabName;
+
+            // 保存先パスを決定
+            string savePath = Path.Combine(saveFolderPath, $"{prefabName}.prefab").Replace("\\", "/");
+
+            // Prefabとして保存
+            var newPrefab = PrefabUtility.SaveAsPrefabAsset(instance, savePath);
+            UnityEngine.Object.DestroyImmediate(instance);
+
+            Debug.Log($"Prefabを作成しました: {savePath}");
+
+            return newPrefab;
         }
     }
 }

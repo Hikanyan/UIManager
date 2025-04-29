@@ -3,7 +3,7 @@ using System.Threading;
 
 namespace #NAMESPACE
 {
-    public class ＃CLASSNAME : PresenterBase<＃PREFABNAMEView, ＃PREFABNAMEMModel>
+    public class ＃CLASSNAME : PresenterBase<＃PREFABNAMEView, ＃PREFABNAMEModel>
     {
         public override UniTask InitializeAsync(CancellationToken ct)
         {

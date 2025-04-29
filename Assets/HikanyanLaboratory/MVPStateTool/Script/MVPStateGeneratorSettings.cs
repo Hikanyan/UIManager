@@ -10,6 +10,9 @@ namespace HikanyanLaboratory.MVPStateTool
         public string TemplatesFolderPath = "Assets/HikanyanLaboratory/UIToolSystem/MVPStateGenerator/Templates";
         public string NameSpace = "HikanyanLaboratory.UISystem";
 
+        public GameObject WindowTemplatePrefab;
+        public GameObject ScreenTemplatePrefab;
+        
         public List<string> WindowStates = new List<string> { "MainWindow", "SettingsWindow" };
         public List<string> ScreenStates = new List<string> { "MainScreen", "SettingsScreen" };
 

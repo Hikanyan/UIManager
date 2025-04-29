@@ -356,6 +356,34 @@ namespace HikanyanLaboratory.MVPStateTool
                 EditorUtility.SetDirty(_settings);
             });
             _contentContainer.Add(namespaceField);
+
+            // Window用テンプレートPrefab
+            var windowTemplatePrefabField = new ObjectField("Window Template Prefab")
+            {
+                objectType = typeof(GameObject),
+                allowSceneObjects = false,
+                value = _settings.WindowTemplatePrefab
+            };
+            windowTemplatePrefabField.RegisterValueChangedCallback(evt =>
+            {
+                _settings.WindowTemplatePrefab = evt.newValue as GameObject;
+                EditorUtility.SetDirty(_settings);
+            });
+            _contentContainer.Add(windowTemplatePrefabField);
+
+            // Screen用テンプレートPrefab
+            var screenTemplatePrefabField = new ObjectField("Screen Template Prefab")
+            {
+                objectType = typeof(GameObject),
+                allowSceneObjects = false,
+                value = _settings.ScreenTemplatePrefab
+            };
+            screenTemplatePrefabField.RegisterValueChangedCallback(evt =>
+            {
+                _settings.ScreenTemplatePrefab = evt.newValue as GameObject;
+                EditorUtility.SetDirty(_settings);
+            });
+            _contentContainer.Add(screenTemplatePrefabField);
         }
 
 
@@ -371,124 +399,6 @@ namespace HikanyanLaboratory.MVPStateTool
                 text = "Generate Window Scripts"
             };
             _contentContainer.Add(generateButton);
-        }
-
-        // private void ShowWindowNodeGenerator()
-        // {
-        //     if (_settings == null)
-        //     {
-        //         _contentContainer.Add(new Label("⚠ 設定ファイルが未設定です"));
-        //         return;
-        //     }
-        //
-        //     _windowNodeInfos.Clear();
-        //     _windowNodeInfos = new List<WindowNodeInfo>();
-        //
-        //     // 保存データ（WindowGenerators）から復元
-        //     foreach (var windowData in _settings.WindowGenerators)
-        //     {
-        //         _windowNodeInfos.Add(new WindowNodeInfo
-        //         {
-        //             GenerateEnum = true,
-        //             GenerateScript = true,
-        //             EnumName = windowData.ScriptName.Replace("Window", ""),
-        //             ScriptName = windowData.ScriptName,
-        //             Prefab = windowData.Prefab
-        //         });
-        //     }
-        //
-        //     _contentContainer.Clear();
-        //
-        //     // ListViewでReorderableに管理
-        //     var listView = new ListView(_windowNodeInfos, 30,
-        //         () => CreateWindowNodeRow(),
-        //         (element, index) => BindWindowNodeRow(element, _windowNodeInfos[index]))
-        //     {
-        //         reorderable = true,
-        //         showAddRemoveFooter = true,
-        //         showBorder = true
-        //     };
-        //     _contentContainer.Add(listView);
-        //
-        //     var addButton = new Button(() =>
-        //     {
-        //         _windowNodeInfos.Add(new WindowNodeInfo
-        //         {
-        //             GenerateEnum = true,
-        //             GenerateScript = true,
-        //             EnumName = "NewWindow",
-        //             ScriptName = "NewWindow"
-        //         });
-        //         listView.Rebuild();
-        //     })
-        //     {
-        //         text = "＋ Add Window"
-        //     };
-        //     _contentContainer.Add(addButton);
-        //
-        //     var generateButton = new Button(GenerateWindowScripts)
-        //     {
-        //         text = "Generate Scripts"
-        //     };
-        //     _contentContainer.Add(generateButton);
-        // }
-        private void CreateWindowNodeGeneratorUI()
-        {
-            _windowList = new ReorderableList(_settings.WindowGenerators, typeof(WindowData), true, true, true, true);
-
-            _windowList.drawHeaderCallback = (Rect rect) => { EditorGUI.LabelField(rect, "Window Generators"); };
-
-            _windowList.drawElementCallback = (Rect rect, int index, bool isActive, bool isFocused) =>
-            {
-                var element = _settings.WindowGenerators[index];
-                rect.y += 2;
-                element.ScriptName = EditorGUI.TextField(
-                    new Rect(rect.x, rect.y, rect.width / 2, EditorGUIUtility.singleLineHeight),
-                    element.ScriptName);
-                element.Prefab = (GameObject)EditorGUI.ObjectField(
-                    new Rect(rect.x + rect.width / 2, rect.y, rect.width / 2, EditorGUIUtility.singleLineHeight),
-                    element.Prefab, typeof(GameObject), false);
-            };
-        }
-
-        private VisualElement CreateWindowNodeRow()
-        {
-            var row = new VisualElement { style = { flexDirection = FlexDirection.Row, alignItems = Align.Center } };
-
-            var enumField = new TextField { style = { width = 120 } };
-            row.Add(enumField);
-
-            var scriptField = new TextField { style = { flexGrow = 1 } };
-            row.Add(scriptField);
-
-            var prefabField = new ObjectField
-            {
-                objectType = typeof(GameObject),
-                allowSceneObjects = false,
-                style = { width = 150 }
-            };
-            row.Add(prefabField);
-
-            var generateToggle = new Toggle("Script") { value = true, style = { width = 60 } };
-            row.Add(generateToggle);
-
-            return row;
-        }
-
-
-        private void BindWindowNodeRow(VisualElement element, WindowNodeInfo data)
-        {
-            ((TextField)element[0]).value = data.EnumName;
-            ((TextField)element[0]).RegisterValueChangedCallback(evt => data.EnumName = evt.newValue);
-
-            ((TextField)element[1]).value = data.ScriptName;
-            ((TextField)element[1]).RegisterValueChangedCallback(evt => data.ScriptName = evt.newValue);
-
-            ((ObjectField)element[2]).value = data.Prefab;
-            ((ObjectField)element[2]).RegisterValueChangedCallback(evt => data.Prefab = evt.newValue as GameObject);
-
-            ((Toggle)element[3]).value = data.GenerateScript;
-            ((Toggle)element[3]).RegisterValueChangedCallback(evt => data.GenerateScript = evt.newValue);
         }
 
         private void GenerateWindowScripts()
@@ -510,12 +420,16 @@ namespace HikanyanLaboratory.MVPStateTool
                 MVPClassFactory.GenerateViewClass(node.ScriptName, outputDir, _settings.NameSpace);
                 MVPClassFactory.GenerateModelClass(node.ScriptName, outputDir, _settings.NameSpace);
                 MVPClassFactory.GeneratePresenterClass(node.ScriptName, outputDir, _settings.NameSpace);
+                string prefabFolder = Path.Combine(outputDir, node.ScriptName, "Resources");
+                var newPrefab =
+                    MVPClassFactory.CreatePrefabFromTemplate(node.ScriptName, _settings.WindowTemplatePrefab,
+                        prefabFolder);
 
                 // ScriptableObjectに登録
                 var windowData = new WindowData
                 {
                     ScriptName = node.ScriptName,
-                    Prefab = node.Prefab
+                    Prefab = node.Prefab != null ? node.Prefab : newPrefab
                 };
                 _settings.WindowGenerators.Add(windowData);
             }
@@ -586,63 +500,6 @@ namespace HikanyanLaboratory.MVPStateTool
             container.Add(listView);
         }
 
-        private static void CreatePrefabList<T>(List<T> list, VisualElement parent) where T : class, new()
-        {
-            if (list == null) return;
-
-            var listView = new ListView(list, 60, () =>
-                {
-                    var container = new VisualElement();
-                    var scriptField = new TextField("Script Name");
-                    container.Add(scriptField);
-                    var prefabField = new ObjectField("Prefab") { objectType = typeof(GameObject) };
-                    container.Add(prefabField);
-                    return container;
-                },
-                (element, index) =>
-                {
-                    var container = (VisualElement)element;
-                    var scriptField = (TextField)container[0];
-                    var prefabField = (ObjectField)container[1];
-
-                    if (list[index] == null) return;
-
-                    if (typeof(T) == typeof(WindowData))
-                    {
-                        var item = (WindowData)(object)list[index];
-                        scriptField.value = item.ScriptName ?? "";
-                        scriptField.RegisterValueChangedCallback(evt => item.ScriptName = evt.newValue);
-                        prefabField.value = item.Prefab;
-                        prefabField.RegisterValueChangedCallback(evt => item.Prefab = evt.newValue as GameObject);
-                    }
-                    else if (typeof(T) == typeof(ScreenData))
-                    {
-                        var item = (ScreenData)(object)list[index];
-                        scriptField.value = item.ScriptName ?? "";
-                        scriptField.RegisterValueChangedCallback(evt => item.ScriptName = evt.newValue);
-                        prefabField.value = item.Prefab;
-                        prefabField.RegisterValueChangedCallback(evt => item.Prefab = evt.newValue as GameObject);
-                    }
-                })
-            {
-                reorderable = true,
-                showAddRemoveFooter = true,
-                showBorder = true
-            };
-
-            listView.itemsAdded += indices =>
-            {
-                foreach (var index in indices)
-                {
-                    list.Insert(index, Activator.CreateInstance<T>());
-                }
-
-                listView.Rebuild();
-            };
-
-            parent.Add(listView);
-        }
-
         private void ShowScreenNodeGenerator()
         {
             if (_settings == null)
@@ -679,19 +536,28 @@ namespace HikanyanLaboratory.MVPStateTool
                 _screenNodeInfosByWindow[windowName] = new List<ScreenNodeInfo>();
             }
 
-            RefreshScreenNodeList();
+            // リストを入れる専用コンテナ
+            var listArea = new VisualElement { name = "ScreenListArea" };
+            _contentContainer.Add(listArea);
 
+            // Generateボタンを別で用意（常に一個だけ）
             var generateButton = new Button(GenerateScreenScripts)
             {
                 text = "Generate Screen Scripts"
             };
             _contentContainer.Add(generateButton);
+
+            // 最初にリスト表示
+            RefreshScreenNodeList();
         }
 
 
         private void RefreshScreenNodeList()
         {
-            _contentContainer.Query<ScrollView>().ForEach(x => x.RemoveFromHierarchy());
+            var listArea = _contentContainer.Q<VisualElement>(name: "ScreenListArea");
+            if (listArea == null) return;
+
+            listArea.Clear(); // リストエリアだけクリアする
 
             if (string.IsNullOrEmpty(_selectedParentWindow)) return;
 
@@ -699,9 +565,6 @@ namespace HikanyanLaboratory.MVPStateTool
             {
                 _screenNodeInfosByWindow[_selectedParentWindow] = new List<ScreenNodeInfo>();
             }
-
-            var scroll = new ScrollView();
-            _contentContainer.Add(scroll);
 
             var currentList = _screenNodeInfosByWindow[_selectedParentWindow];
 
@@ -713,7 +576,7 @@ namespace HikanyanLaboratory.MVPStateTool
                 showAddRemoveFooter = true,
                 showBorder = true
             };
-            scroll.Add(listView);
+            listArea.Add(listView);
 
             listView.itemsAdded += indices =>
             {
@@ -730,9 +593,9 @@ namespace HikanyanLaboratory.MVPStateTool
                         };
                     }
                 }
-                listView.RefreshItems(); 
-            };
 
+                listView.RefreshItems();
+            };
         }
 
 
@@ -797,11 +660,15 @@ namespace HikanyanLaboratory.MVPStateTool
                 MVPClassFactory.GenerateViewClass(node.ScriptName, outputDir, _settings.NameSpace);
                 MVPClassFactory.GenerateModelClass(node.ScriptName, outputDir, _settings.NameSpace);
                 MVPClassFactory.GeneratePresenterClass(node.ScriptName, outputDir, _settings.NameSpace);
+                string prefabFolder = Path.Combine(outputDir, node.ScriptName, "Resources");
+                var newPrefab =
+                    MVPClassFactory.CreatePrefabFromTemplate(node.ScriptName, _settings.ScreenTemplatePrefab,
+                        prefabFolder);
 
                 var screenData = new ScreenData
                 {
                     ScriptName = node.ScriptName,
-                    Prefab = node.Prefab
+                    Prefab = node.Prefab != null ? node.Prefab : newPrefab
                 };
                 _settings.ScreenGenerators.Add(screenData);
             }
