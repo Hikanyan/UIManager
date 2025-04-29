@@ -42,6 +42,7 @@ namespace HikanyanLaboratory.MVPStateTool
     {
         [SerializeField] private string scriptName;
         [SerializeField] private GameObject prefab;
+        [SerializeField] private bool isGenerated;
 
         public string ScriptName
         {
@@ -53,6 +54,11 @@ namespace HikanyanLaboratory.MVPStateTool
         {
             get => prefab;
             set => prefab = value;
+        }
+        public bool IsGenerated
+        {
+            get => isGenerated;
+            set => isGenerated = value;
         }
     }
 

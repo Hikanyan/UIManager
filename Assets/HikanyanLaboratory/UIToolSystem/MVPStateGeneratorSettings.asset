@@ -26,22 +26,16 @@ MonoBehaviour:
   - TitleScreen
   WindowGenerators:
   - scriptName: MainWindow
-    prefab: {fileID: 1427343702551978131, guid: 031e75454a18c614d944533c377170ab, type: 3}
+    prefab: {fileID: 0}
   - scriptName: TitleWindow
-    prefab: {fileID: 7315736807965787520, guid: 5d15f9414489d6749857fcf72dde363f, type: 3}
+    prefab: {fileID: 0}
   - scriptName: LoginWindow
-    prefab: {fileID: 7845741290765529689, guid: e116e97448d32c64da70e574e95c1203, type: 3}
+    prefab: {fileID: 0}
   ScreenGeneratorsByWindow:
   - ParentWindowName: None
-    Screens:
-    - scriptName: NekoScreen
-      prefab: {fileID: 0}
-      isGenerated: 0
+    Screens: []
   - ParentWindowName: MainWindow
     Screens:
-    - scriptName: NewScreen
-      prefab: {fileID: 0}
-      isGenerated: 0
     - scriptName: NewScreen
       prefab: {fileID: 0}
       isGenerated: 0

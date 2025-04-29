@@ -437,6 +437,11 @@ namespace HikanyanLaboratory.MVPStateTool
                 _settings.WindowGenerators
             );
 
+            // 生成成功後、全部GenerateScript=falseにする
+            foreach (var node in _windowNodeInfos)
+            {
+                node.GenerateScript = false;
+            }
 
             EditorUtility.SetDirty(_settings);
             AssetDatabase.SaveAssets();
@@ -514,6 +519,7 @@ namespace HikanyanLaboratory.MVPStateTool
                 _contentContainer.Add(new Label("⚠ WindowState Enumが見つかりません"));
                 return;
             }
+
             var windowNames = Enum.GetNames(windowStateType);
 
             // PopupFieldで選択
@@ -553,7 +559,7 @@ namespace HikanyanLaboratory.MVPStateTool
                 }
             }
 
-            // --- リストエリアとボタンを配置
+            // リストエリアとボタンを配置
             _screenListContainer = new VisualElement();
             _contentContainer.Add(_screenListContainer);
 
@@ -565,7 +571,6 @@ namespace HikanyanLaboratory.MVPStateTool
             };
             _contentContainer.Add(generateButton);
         }
-
 
 
         private void SetupScreenList()
@@ -613,6 +618,7 @@ namespace HikanyanLaboratory.MVPStateTool
                     GenerateScript = true,
                     ScriptName = "NewScreen"
                 });
+                SaveScreenNodeInfos();
             };
 
             _screenList.onRemoveCallback = list =>
@@ -620,6 +626,7 @@ namespace HikanyanLaboratory.MVPStateTool
                 if (list.index >= 0 && list.index < _screenNodeInfosByWindow[_selectedParentWindow].Count)
                 {
                     _screenNodeInfosByWindow[_selectedParentWindow].RemoveAt(list.index);
+                    SaveScreenNodeInfos();
                 }
             };
 
@@ -811,30 +818,7 @@ namespace HikanyanLaboratory.MVPStateTool
                 return;
             }
 
-            _settings.ScreenGeneratorsByWindow.Clear();
-            foreach (var kvp in _screenNodeInfosByWindow)
-            {
-                var group = new ScreenDataGroup
-                {
-                    ParentWindowName = kvp.Key,
-                    Screens = new List<ScreenData>()
-                };
-
-                foreach (var nodeInfo in kvp.Value)
-                {
-                    if (!nodeInfo.GenerateScript) continue;
-
-                    group.Screens.Add(new ScreenData
-                    {
-                        ScriptName = nodeInfo.ScriptName,
-                        Prefab = nodeInfo.Prefab,
-                        IsGenerated = nodeInfo.IsGenerated
-                    });
-                }
-
-                _settings.ScreenGeneratorsByWindow.Add(group);
-            }
-
+            // スクリプト生成処理
             MVPClassFactory.GenerateScriptsAndPrefabs<ScreenNodeInfo, ScreenData>(
                 validScreenNodes,
                 _settings.OutputDirectory,
@@ -842,6 +826,15 @@ namespace HikanyanLaboratory.MVPStateTool
                 _settings.ScreenTemplatePrefab,
                 new List<ScreenData>()
             );
+
+            // ここで、生成成功したノードのToggleをOFFにする
+            foreach (var node in validScreenNodes)
+            {
+                node.GenerateScript = false;
+            }
+
+            // 保存して終了
+            SaveScreenNodeInfos();
 
             EditorUtility.SetDirty(_settings);
             AssetDatabase.SaveAssets();
