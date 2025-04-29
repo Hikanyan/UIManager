@@ -67,14 +67,21 @@ namespace HikanyanLaboratory.MVPStateTool
 
             _windowList.onAddCallback = list =>
             {
-                _settings.WindowGenerators.Add(new WindowData { ScriptName = "NewWindow" });
+                int newIndex = _settings.WindowGenerators.Count + 1;
+                _settings.WindowGenerators.Add(new WindowData
+                {
+                    ScriptName = $"NewWindow{newIndex:00}"
+                });
                 EditorUtility.SetDirty(_settings);
             };
 
             _windowList.onRemoveCallback = list =>
             {
-                _settings.WindowGenerators.RemoveAt(list.index);
-                EditorUtility.SetDirty(_settings);
+                if (list.index >= 0 && list.index < _settings.WindowGenerators.Count)
+                {
+                    _settings.WindowGenerators.RemoveAt(list.index);
+                    EditorUtility.SetDirty(_settings);
+                }
             };
         }
 
@@ -405,34 +412,13 @@ namespace HikanyanLaboratory.MVPStateTool
         {
             if (_settings == null) return;
 
-            string outputDir = _settings.OutputDirectory;
-            if (!Directory.Exists(outputDir))
-            {
-                Directory.CreateDirectory(outputDir);
-            }
-
-            _settings.WindowGenerators.Clear(); // 一回リセットする
-
-            foreach (var node in _windowNodeInfos)
-            {
-                if (!node.GenerateScript) continue;
-
-                MVPClassFactory.GenerateViewClass(node.ScriptName, outputDir, _settings.NameSpace);
-                MVPClassFactory.GenerateModelClass(node.ScriptName, outputDir, _settings.NameSpace);
-                MVPClassFactory.GeneratePresenterClass(node.ScriptName, outputDir, _settings.NameSpace);
-                string prefabFolder = Path.Combine(outputDir, node.ScriptName, "Resources");
-                var newPrefab =
-                    MVPClassFactory.CreatePrefabFromTemplate(node.ScriptName, _settings.WindowTemplatePrefab,
-                        prefabFolder);
-
-                // ScriptableObjectに登録
-                var windowData = new WindowData
-                {
-                    ScriptName = node.ScriptName,
-                    Prefab = node.Prefab != null ? node.Prefab : newPrefab
-                };
-                _settings.WindowGenerators.Add(windowData);
-            }
+            MVPClassFactory.GenerateScriptsAndPrefabs<WindowNodeInfo, WindowData>(
+                _windowNodeInfos,
+                _settings.OutputDirectory,
+                _settings.NameSpace,
+                _settings.WindowTemplatePrefab,
+                _settings.WindowGenerators
+            );
 
 
             EditorUtility.SetDirty(_settings);
@@ -642,52 +628,16 @@ namespace HikanyanLaboratory.MVPStateTool
         {
             if (_settings == null) return;
 
-            string outputDir = _settings.OutputDirectory;
-            if (!Directory.Exists(outputDir))
-            {
-                Directory.CreateDirectory(outputDir);
-            }
-
             if (string.IsNullOrEmpty(_selectedParentWindow)) return;
+            if (!_screenNodeInfosByWindow.TryGetValue(_selectedParentWindow, out var screenNodes)) return;
 
-            var screenNodes = _screenNodeInfosByWindow[_selectedParentWindow];
-            foreach (var node in screenNodes)
-            {
-                if (!node.GenerateScript) continue;
-
-                // --- 保存先パス調整 ---
-                string baseFolder = Path.Combine(outputDir, node.ScriptName);
-                string scriptFolder = Path.Combine(baseFolder, "Script");
-                string prefabFolder = Path.Combine(baseFolder, "Resources");
-
-                if (!Directory.Exists(scriptFolder)) Directory.CreateDirectory(scriptFolder);
-                if (!Directory.Exists(prefabFolder)) Directory.CreateDirectory(prefabFolder);
-
-                // --- スクリプト出力（Scriptフォルダに出力） ---
-                MVPClassFactory.GenerateViewClass(node.ScriptName, scriptFolder, _settings.NameSpace);
-                MVPClassFactory.GenerateModelClass(node.ScriptName, scriptFolder, _settings.NameSpace);
-                MVPClassFactory.GeneratePresenterClass(node.ScriptName, scriptFolder, _settings.NameSpace);
-
-                // --- Prefab作成（Resourcesフォルダに保存） ---
-                var newPrefab = MVPClassFactory.CreatePrefabFromTemplate(
-                    node.ScriptName, _settings.ScreenTemplatePrefab, prefabFolder);
-
-                // --- 既存ScreenDataの更新 or 新規追加 ---
-                var existing = _settings.ScreenGenerators.Find(x => x.ScriptName == node.ScriptName);
-                if (existing != null)
-                {
-                    existing.Prefab = node.Prefab != null ? node.Prefab : newPrefab;
-                }
-                else
-                {
-                    var screenData = new ScreenData
-                    {
-                        ScriptName = node.ScriptName,
-                        Prefab = node.Prefab != null ? node.Prefab : newPrefab
-                    };
-                    _settings.ScreenGenerators.Add(screenData);
-                }
-            }
+            MVPClassFactory.GenerateScriptsAndPrefabs<ScreenNodeInfo, ScreenData>(
+                screenNodes,
+                _settings.OutputDirectory,
+                _settings.NameSpace,
+                _settings.ScreenTemplatePrefab,
+                _settings.ScreenGenerators
+            );
 
             EditorUtility.SetDirty(_settings);
             AssetDatabase.SaveAssets();

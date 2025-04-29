@@ -24,7 +24,15 @@ MonoBehaviour:
   ScreenStates:
   - MainScreen
   - TitleScreen
-  WindowGenerators: []
+  WindowGenerators:
+  - ScriptName: NewWindow
+    Prefab: {fileID: 0}
+  - ScriptName: MainWindow
+    Prefab: {fileID: 0}
+  - ScriptName: NewWindow03
+    Prefab: {fileID: 0}
   ScreenGenerators:
   - ScriptName: TestScreen
     Prefab: {fileID: 8588549584889478944, guid: ef272fe1f3c6e4995aa0a77e2aa6329e, type: 3}
+  - ScriptName: NewScreen
+    Prefab: {fileID: 3696702594618105409, guid: 27c4dbefbd3b04577b769f20a7473fe5, type: 3}

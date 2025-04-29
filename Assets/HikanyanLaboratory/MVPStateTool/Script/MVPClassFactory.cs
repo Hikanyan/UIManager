@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
@@ -97,7 +98,9 @@ namespace HikanyanLaboratory.MVPStateTool
 
             GenerateFromTemplate("EnumTemplate.txt", outputPath, replacements);
         }
-        public static GameObject CreatePrefabFromTemplate(string prefabName, GameObject templatePrefab, string saveFolderPath)
+
+        public static GameObject CreatePrefabFromTemplate(string prefabName, GameObject templatePrefab,
+            string saveFolderPath)
         {
             if (templatePrefab == null)
             {
@@ -133,6 +136,82 @@ namespace HikanyanLaboratory.MVPStateTool
             Debug.Log($"Prefabを作成しました: {savePath}");
 
             return newPrefab;
+        }
+
+        public static void GenerateScriptsAndPrefabs<TNode, TData>(
+            List<TNode> nodes,
+            string outputRootDir,
+            string nameSpace,
+            GameObject templatePrefab,
+            List<TData> outputDataList
+        )
+            where TNode : IGeneratorNode
+            where TData : IDataEntry, new()
+        {
+            if (nodes == null || nodes.Count == 0) return;
+
+            foreach (var node in nodes)
+            {
+                if (!node.GenerateScript) continue;
+
+                // ScriptName空チェックと初期化
+                if (string.IsNullOrEmpty(node.ScriptName))
+                {
+                    Debug.LogWarning("ScriptNameが空だったので自動で付与します。");
+                    node.ScriptName = $"Auto_{Guid.NewGuid().ToString("N").Substring(0, 6)}";
+                }
+
+                string baseFolder = Path.Combine(outputRootDir, node.ScriptName);
+                string scriptFolder = Path.Combine(baseFolder, "Script");
+                string prefabFolder = Path.Combine(baseFolder, "Resources");
+
+                if (!Directory.Exists(scriptFolder)) Directory.CreateDirectory(scriptFolder);
+                if (!Directory.Exists(prefabFolder)) Directory.CreateDirectory(prefabFolder);
+
+                // --- スクリプト作成 ---
+                GenerateViewClass(node.ScriptName, scriptFolder, nameSpace);
+                GenerateModelClass(node.ScriptName, scriptFolder, nameSpace);
+                GeneratePresenterClass(node.ScriptName, scriptFolder, nameSpace);
+
+                // --- Prefab作成 ---
+                var newPrefab = CreatePrefabFromTemplate(node.ScriptName, templatePrefab, prefabFolder);
+
+                if (newPrefab != null)
+                {
+                    string viewScriptFullName = $"{nameSpace}.{node.ScriptName}View";
+                    var viewType = Type.GetType(viewScriptFullName);
+
+                    if (viewType != null && newPrefab.GetComponent(viewType) == null)
+                    {
+                        newPrefab.AddComponent(viewType);
+                        PrefabUtility.SavePrefabAsset(newPrefab);
+                        Debug.Log($"Prefabに Viewコンポーネントを追加しました: {viewType.Name}");
+                    }
+                    else if (viewType == null)
+                    {
+                        Debug.LogWarning($"Viewスクリプトがまだ存在しません: {viewScriptFullName}");
+                    }
+                }
+
+                // --- 出力リストに登録または更新 ---
+                var existing = outputDataList.Find(x => x.ScriptName == node.ScriptName);
+                if (existing != null)
+                {
+                    existing.Prefab = node.Prefab != null ? node.Prefab : newPrefab;
+                }
+                else
+                {
+                    var newData = new TData
+                    {
+                        ScriptName = node.ScriptName,
+                        Prefab = node.Prefab != null ? node.Prefab : newPrefab
+                    };
+                    outputDataList.Add(newData);
+                }
+            }
+
+            // ★注意：ここで SetDirty, SaveAssets, Refresh はやらない！
+            // 必ず呼び出し元（Window側）でやる
         }
     }
 }

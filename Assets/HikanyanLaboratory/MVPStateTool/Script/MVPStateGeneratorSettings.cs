@@ -3,7 +3,8 @@ using UnityEngine;
 
 namespace HikanyanLaboratory.MVPStateTool
 {
-    [CreateAssetMenu(fileName = "MVPStateGeneratorSettings", menuName = "HikanyanLaboratory/MVPStateGeneratorSettings", order = 1)]
+    [CreateAssetMenu(fileName = "MVPStateGeneratorSettings", menuName = "HikanyanLaboratory/MVPStateGeneratorSettings",
+        order = 1)]
     public class MVPStateGeneratorSettings : ScriptableObject
     {
         public string OutputDirectory = "Assets/HikanyanLaboratory/UIToolSystem/MVPStateGenerator/Generated";
@@ -12,7 +13,7 @@ namespace HikanyanLaboratory.MVPStateTool
 
         public GameObject WindowTemplatePrefab;
         public GameObject ScreenTemplatePrefab;
-        
+
         public List<string> WindowStates = new List<string> { "MainWindow", "SettingsWindow" };
         public List<string> ScreenStates = new List<string> { "MainScreen", "SettingsScreen" };
 
@@ -20,38 +21,140 @@ namespace HikanyanLaboratory.MVPStateTool
         public List<ScreenData> ScreenGenerators = new List<ScreenData>();
     }
 
-    [System.Serializable]
-    public class WindowData
+    // --- 共通インターフェース定義 ---
+    public interface IDataEntry
     {
-        public string ScriptName;
-        public GameObject Prefab;
+        string ScriptName { get; set; }
+        GameObject Prefab { get; set; }
+    }
+
+    public interface IGeneratorNode
+    {
+        bool GenerateEnum { get; set; }
+        bool GenerateScript { get; set; }
+        string EnumName { get; set; }
+        string ScriptName { get; set; }
+        GameObject Prefab { get; set; }
+    }
+
+    // --- 出力用データ（生成後に保存するもの） ---
+    [System.Serializable]
+    public class WindowData : IDataEntry
+    {
+        [SerializeField] private string scriptName;
+        [SerializeField] private GameObject prefab;
+
+        public string ScriptName
+        {
+            get => scriptName;
+            set => scriptName = value;
+        }
+
+        public GameObject Prefab
+        {
+            get => prefab;
+            set => prefab = value;
+        }
     }
 
     [System.Serializable]
-    public class WindowNodeInfo
+    public class ScreenData : IDataEntry
     {
-        public bool GenerateEnum = true;
-        public bool GenerateScript = true;
-        public string EnumName;
-        public string ScriptName;
-        public GameObject Prefab;
+        [SerializeField] private string scriptName;
+        [SerializeField] private GameObject prefab;
+
+        public string ScriptName
+        {
+            get => scriptName;
+            set => scriptName = value;
+        }
+
+        public GameObject Prefab
+        {
+            get => prefab;
+            set => prefab = value;
+        }
     }
 
 
+    // --- UI側で使うノード情報（生成前の管理情報） ---
     [System.Serializable]
-    public class ScreenData
+    public class WindowNodeInfo : IGeneratorNode
     {
-        public string ScriptName;
-        public GameObject Prefab;
+        [SerializeField] private bool generateEnum = true;
+        [SerializeField] private bool generateScript = true;
+        [SerializeField] private string enumName;
+        [SerializeField] private string scriptName;
+        [SerializeField] private GameObject prefab;
+
+        public bool GenerateEnum
+        {
+            get => generateEnum;
+            set => generateEnum = value;
+        }
+
+        public bool GenerateScript
+        {
+            get => generateScript;
+            set => generateScript = value;
+        }
+
+        public string EnumName
+        {
+            get => enumName;
+            set => enumName = value;
+        }
+
+        public string ScriptName
+        {
+            get => scriptName;
+            set => scriptName = value;
+        }
+
+        public GameObject Prefab
+        {
+            get => prefab;
+            set => prefab = value;
+        }
     }
-    
+
     [System.Serializable]
-    public class ScreenNodeInfo
+    public class ScreenNodeInfo : IGeneratorNode
     {
-        public bool GenerateEnum = true;
-        public bool GenerateScript = true;
-        public string EnumName;
-        public string ScriptName;
-        public GameObject Prefab;
+        [SerializeField] private bool generateEnum = true;
+        [SerializeField] private bool generateScript = true;
+        [SerializeField] private string enumName;
+        [SerializeField] private string scriptName;
+        [SerializeField] private GameObject prefab;
+
+        public bool GenerateEnum
+        {
+            get => generateEnum;
+            set => generateEnum = value;
+        }
+
+        public bool GenerateScript
+        {
+            get => generateScript;
+            set => generateScript = value;
+        }
+
+        public string EnumName
+        {
+            get => enumName;
+            set => enumName = value;
+        }
+
+        public string ScriptName
+        {
+            get => scriptName;
+            set => scriptName = value;
+        }
+
+        public GameObject Prefab
+        {
+            get => prefab;
+            set => prefab = value;
+        }
     }
 }
