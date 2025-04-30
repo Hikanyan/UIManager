@@ -448,19 +448,28 @@ namespace HikanyanLaboratory.MVPStateTool
                 _settings.WindowGenerators
             );
 
-            // 生成成功後、全部GenerateScript=falseにする
             foreach (var node in _windowNodeInfos)
             {
                 node.GenerateScript = false;
             }
 
             SaveWindowNodeInfos();
+
+            // Window Enumも自動生成する！
+            MVPClassFactory.GenerateEnumClass(
+                "WindowState",
+                _windowNodeInfos.ConvertAll(w => w.ScriptName),
+                _settings.OutputDirectory,
+                _settings.NameSpace
+            );
+
             EditorUtility.SetDirty(_settings);
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
-            ReloadWindowNodeInfos();
-            Debug.Log("Windowノードのスクリプトを生成＆保存しました！");
+
+            Debug.Log("Windowノードのスクリプト＆Enumを生成＆保存しました！");
         }
+
 
         private void ReloadWindowNodeInfos()
         {

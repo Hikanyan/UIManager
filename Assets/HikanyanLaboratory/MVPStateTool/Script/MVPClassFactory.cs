@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
+using UnityEditor.Compilation;
 
 namespace HikanyanLaboratory.MVPStateTool
 {
@@ -11,12 +12,10 @@ namespace HikanyanLaboratory.MVPStateTool
         public static string TemplatesFolderPath { get; set; } =
             "Assets/HikanyanLaboratory/UIToolSystem/MVPStateGenerator/Templates";
 
-
         private static void GenerateFromTemplate(string templateFileName, string outputPath,
             Dictionary<string, string> replacements)
         {
             string templatePath = Path.Combine(TemplatesFolderPath, templateFileName);
-
             if (!File.Exists(templatePath))
             {
                 Debug.LogError($"テンプレートファイルが見つかりません: {templatePath}");
@@ -24,8 +23,6 @@ namespace HikanyanLaboratory.MVPStateTool
             }
 
             string templateContent = File.ReadAllText(templatePath);
-
-            // ＃または#どちらも対応して置換
             foreach (var kvp in replacements)
             {
                 templateContent = templateContent.Replace($"＃{kvp.Key}", kvp.Value);
@@ -108,14 +105,12 @@ namespace HikanyanLaboratory.MVPStateTool
                 return null;
             }
 
-            // 生成先のフォルダ確認＆作成
             if (!Directory.Exists(saveFolderPath))
             {
                 Directory.CreateDirectory(saveFolderPath);
                 AssetDatabase.Refresh();
             }
 
-            // テンプレートPrefabをインスタンス化
             var instance = PrefabUtility.InstantiatePrefab(templatePrefab) as GameObject;
             if (instance == null)
             {
@@ -123,18 +118,12 @@ namespace HikanyanLaboratory.MVPStateTool
                 return null;
             }
 
-            // 名前を指定
             instance.name = prefabName;
-
-            // 保存先パスを決定
             string savePath = Path.Combine(saveFolderPath, $"{prefabName}.prefab").Replace("\\", "/");
-
-            // Prefabとして保存
             var newPrefab = PrefabUtility.SaveAsPrefabAsset(instance, savePath);
             UnityEngine.Object.DestroyImmediate(instance);
 
             Debug.Log($"Prefabを作成しました: {savePath}");
-
             return newPrefab;
         }
 
@@ -158,7 +147,6 @@ namespace HikanyanLaboratory.MVPStateTool
             {
                 if (!node.GenerateScript) continue;
 
-                // ScriptName空チェックと初期化
                 if (string.IsNullOrEmpty(node.ScriptName))
                 {
                     Debug.LogWarning("ScriptNameが空だったので自動で付与します。");
@@ -171,8 +159,8 @@ namespace HikanyanLaboratory.MVPStateTool
 
                 try
                 {
-                    if (!Directory.Exists(scriptFolder)) Directory.CreateDirectory(scriptFolder);
-                    if (!Directory.Exists(prefabFolder)) Directory.CreateDirectory(prefabFolder);
+                    Directory.CreateDirectory(scriptFolder);
+                    Directory.CreateDirectory(prefabFolder);
                 }
                 catch (Exception ex)
                 {
@@ -182,7 +170,6 @@ namespace HikanyanLaboratory.MVPStateTool
 
                 try
                 {
-                    // --- スクリプト作成 ---
                     GenerateViewClass(node.ScriptName, scriptFolder, nameSpace);
                     GenerateModelClass(node.ScriptName, scriptFolder, nameSpace);
                     GeneratePresenterClass(node.ScriptName, scriptFolder, nameSpace);
@@ -192,71 +179,33 @@ namespace HikanyanLaboratory.MVPStateTool
                     Debug.LogError($"スクリプト生成エラー（{node.ScriptName}）: {ex.Message}");
                     continue;
                 }
+            }
 
-                // --- Prefab作成 ---
+            // Refreshしてコンパイルを促す
+            AssetDatabase.Refresh();
+
+            // Prefabを先に作る（後でスクリプトAttachするため）
+            List<(GameObject prefab, string scriptName)> prefabsToFix = new();
+
+            foreach (var node in nodes)
+            {
+                if (!node.GenerateScript) continue;
+
+                string baseFolder = Path.Combine(outputRootDir, node.ScriptName);
+                string prefabFolder = Path.Combine(baseFolder, "Resources");
+
                 var newPrefab = CreatePrefabFromTemplate(node.ScriptName, templatePrefab, prefabFolder);
-
                 if (newPrefab == null)
                 {
                     Debug.LogError($"Prefab生成に失敗しました: {node.ScriptName}");
                     continue;
                 }
-                if (node is ScreenNodeInfo screenNode)
-                {
-                    screenNode.IsGenerated = true;
-                }
-                // --- Viewコンポーネントを追加 ---
-                string viewScriptFullName = $"{nameSpace}.{node.ScriptName}View";
-                var viewType = Type.GetType(viewScriptFullName);
 
-                if (viewType != null)
-                {
-                    if (newPrefab.GetComponent(viewType) == null)
-                    {
-                        try
-                        {
-                            newPrefab.AddComponent(viewType);
-                            PrefabUtility.SavePrefabAsset(newPrefab);
-                            Debug.Log($"PrefabにViewコンポーネントを追加しました: {viewType.Name}");
-                        }
-                        catch (Exception ex)
-                        {
-                            Debug.LogError($"PrefabへのViewコンポーネント追加エラー（{viewType.Name}）: {ex.Message}");
-                        }
-                    }
-                }
-                else
-                {
-                    Debug.LogWarning($"Viewスクリプトが見つかりませんでした: {viewScriptFullName}");
-                }
-                
-                // --- Presenterコンポーネントも追加 ---
-                string presenterScriptFullName = $"{nameSpace}.{node.ScriptName}Presenter";
-                var presenterType = Type.GetType(presenterScriptFullName);
+                prefabsToFix.Add((newPrefab, node.ScriptName));
 
-                if (presenterType != null)
-                {
-                    if (newPrefab.GetComponent(presenterType) == null)
-                    {
-                        try
-                        {
-                            newPrefab.AddComponent(presenterType);
-                            Debug.Log($"PrefabにPresenterコンポーネントを追加しました: {presenterType.Name}");
-                        }
-                        catch (Exception ex)
-                        {
-                            Debug.LogError($"PrefabへのPresenterコンポーネント追加エラー（{presenterType.Name}）: {ex.Message}");
-                        }
-                    }
-                }
-                else
-                {
-                    Debug.LogWarning($"Presenterスクリプトが見つかりませんでした: {presenterScriptFullName}");
-                }
+                if (node is ScreenNodeInfo screenNode) screenNode.IsGenerated = true;
+                if (node is WindowNodeInfo windowNode) windowNode.GenerateScript = false;
 
-                // 最後にPrefab保存
-                PrefabUtility.SavePrefabAsset(newPrefab);
-                // --- 出力リストに登録または更新 ---
                 try
                 {
                     var existing = outputDataList.Find(x => x.ScriptName == node.ScriptName);
@@ -266,12 +215,11 @@ namespace HikanyanLaboratory.MVPStateTool
                     }
                     else
                     {
-                        var newData = new TData
+                        outputDataList.Add(new TData
                         {
                             ScriptName = node.ScriptName,
                             Prefab = node.Prefab != null ? node.Prefab : newPrefab
-                        };
-                        outputDataList.Add(newData);
+                        });
                     }
                 }
                 catch (Exception ex)
@@ -279,6 +227,78 @@ namespace HikanyanLaboratory.MVPStateTool
                     Debug.LogError($"出力リスト登録エラー（{node.ScriptName}）: {ex.Message}");
                 }
             }
+
+            // コンパイル完了後にPrefabにスクリプト追加
+            CompilationPipeline.compilationFinished += (assemblies) =>
+            {
+                Debug.Log("コンパイル完了を検知。少し待ってPrefabにView/Presenterを追加します。");
+
+                // さらに1フレーム遅延
+                EditorApplication.delayCall += () =>
+                {
+                    // PrefabにスクリプトをAttach
+                    foreach (var (prefab, scriptName) in prefabsToFix)
+                    {
+                        AttachScriptsToPrefab(prefab, nameSpace, scriptName);
+                    }
+
+                    Debug.Log("PrefabにView/Presenterを追加しました！");
+                };
+
+                // 必ずイベント解除
+                CompilationPipeline.compilationFinished -= (assemblies) => { };
+            };
+
         }
+
+        private static void AttachScriptsToPrefab(GameObject prefab, string nameSpace, string scriptName)
+        {
+            if (prefab == null) return;
+
+            string viewScriptFullName = $"{nameSpace}.{scriptName}View";
+            string presenterScriptFullName = $"{nameSpace}.{scriptName}Presenter";
+
+            TryAddComponent(prefab, viewScriptFullName);
+            TryAddComponent(prefab, presenterScriptFullName);
+
+            PrefabUtility.SavePrefabAsset(prefab);
+            Debug.Log($"PrefabにView/Presenterを追加しました: {prefab.name}");
+        }
+
+
+        private static void TryAddComponent(GameObject prefab, string fullTypeName)
+        {
+            var type = FindTypeByName(fullTypeName);
+            if (type == null)
+            {
+                Debug.LogWarning($"スクリプトが見つかりませんでした: {fullTypeName}");
+                return;
+            }
+
+            if (prefab.GetComponent(type) == null)
+            {
+                try
+                {
+                    prefab.AddComponent(type);
+                    Debug.Log($"Prefabにコンポーネントを追加しました: {type.Name}");
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogError($"コンポーネント追加エラー ({type.Name}): {ex.Message}");
+                }
+            }
+        }
+
+        private static Type FindTypeByName(string fullName)
+        {
+            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                var type = assembly.GetType(fullName);
+                if (type != null)
+                    return type;
+            }
+            return null;
+        }
+
     }
 }
