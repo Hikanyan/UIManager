@@ -455,13 +455,13 @@ namespace HikanyanLaboratory.MVPStateTool
 
             SaveWindowNodeInfos();
 
-            // Window Enumも自動生成する！
-            MVPClassFactory.GenerateEnumClass(
-                "WindowState",
-                _windowNodeInfos.ConvertAll(w => w.ScriptName),
-                _settings.OutputDirectory,
-                _settings.NameSpace
-            );
+            // Window Enum の自動生成
+            // MVPClassFactory.GenerateEnumClass(
+            //     "WindowState",
+            //     _windowNodeInfos.ConvertAll(w => w.ScriptName),
+            //     _settings.OutputDirectory,
+            //     _settings.NameSpace
+            // );
 
             EditorUtility.SetDirty(_settings);
             AssetDatabase.SaveAssets();
