@@ -3,6 +3,8 @@ namespace HikanyanLaboratory.UISystem
     public enum WindowState
     {
         None,
-        MainWindow
+        MainWindow,
+        TitleWindow,
+        LoginWindow
     }
 }

@@ -544,13 +544,25 @@ namespace HikanyanLaboratory.MVPStateTool
 
             container.Add(listView);
         }
+        private static Type FindTypeByName(string fullName)
+        {
+            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                var type = assembly.GetType(fullName);
+                if (type != null)
+                    return type;
+            }
+            return null;
+        }
+
 
         private void ShowScreenNodeGenerator()
         {
             _contentContainer.Clear();
 
             // WindowState一覧取得
-            Type windowStateType = Type.GetType($"{_settings.NameSpace}.WindowState");
+            //Type windowStateType = Type.GetType($"{_settings.NameSpace}.WindowState");
+            Type windowStateType = FindTypeByName($"{_settings.NameSpace}.WindowState");
             if (windowStateType == null)
             {
                 _contentContainer.Add(new Label("⚠ WindowState Enumが見つかりません"));

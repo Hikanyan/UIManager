@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityEditor.Compilation;
@@ -11,6 +12,8 @@ namespace HikanyanLaboratory.MVPStateTool
     {
         public static string TemplatesFolderPath { get; set; } =
             "Assets/HikanyanLaboratory/UIToolSystem/MVPStateGenerator/Templates";
+
+        private static Action<object> _onCompilationFinishedHandler;
 
         private static void GenerateFromTemplate(string templateFileName, string outputPath,
             Dictionary<string, string> replacements)
@@ -180,10 +183,7 @@ namespace HikanyanLaboratory.MVPStateTool
                     continue;
                 }
             }
-
-            // Refreshしてコンパイルを促す
-            AssetDatabase.Refresh();
-
+            
             // Prefabを先に作る（後でスクリプトAttachするため）
             List<(GameObject prefab, string scriptName)> prefabsToFix = new();
 
@@ -228,30 +228,39 @@ namespace HikanyanLaboratory.MVPStateTool
                 }
             }
 
-            // コンパイル完了後にPrefabにスクリプト追加
-            CompilationPipeline.compilationFinished += (assemblies) =>
-            {
-                Debug.Log("コンパイル完了を検知。少し待ってPrefabにView/Presenterを追加します。");
+            // Refreshしてコンパイルを促す
+            // AssetDatabase.Refresh();
+            
+            RegisterPostCompileAttachTask(prefabsToFix, nameSpace);
+        }
 
-                // さらに1フレーム遅延
-                EditorApplication.delayCall += () =>
+        private static void RegisterCompilationFinishedCallback(
+            List<(GameObject prefab, string scriptName)> prefabsToFix, string nameSpace)
+        {
+            _onCompilationFinishedHandler = (assemblies) =>
+            {
+                CompilationPipeline.compilationFinished -= _onCompilationFinishedHandler;
+
+                try
                 {
-                    // PrefabにスクリプトをAttach
                     foreach (var (prefab, scriptName) in prefabsToFix)
                     {
                         AttachScriptsToPrefab(prefab, nameSpace, scriptName);
                     }
 
                     Debug.Log("PrefabにView/Presenterを追加しました！");
-                };
-
-                // 必ずイベント解除
-                CompilationPipeline.compilationFinished -= (assemblies) => { };
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError($"Prefabへのスクリプトアタッチ処理中に例外が発生しました: {e}");
+                }
             };
 
+            CompilationPipeline.compilationFinished += _onCompilationFinishedHandler;
         }
 
-        private static void AttachScriptsToPrefab(GameObject prefab, string nameSpace, string scriptName)
+
+        public static void AttachScriptsToPrefab(GameObject prefab, string nameSpace, string scriptName)
         {
             if (prefab == null) return;
 
@@ -288,6 +297,32 @@ namespace HikanyanLaboratory.MVPStateTool
                 }
             }
         }
+        public static void RegisterPostCompileAttachTask(
+            List<(GameObject prefab, string scriptName)> prefabsToFix, string nameSpace)
+        {
+#if UNITY_EDITOR
+            if (prefabsToFix == null || prefabsToFix.Count == 0)
+            {
+                Debug.LogWarning("登録対象のPrefabがありません。");
+                return;
+            }
+
+            var state = MVPPostCompileState.instance;
+            state.step = 1;
+            state.nameSpace = nameSpace;
+            state.prefabPaths = prefabsToFix
+                .Select(pair => AssetDatabase.GetAssetPath(pair.prefab))
+                .ToArray();
+            state.scriptNames = prefabsToFix
+                .Select(pair => pair.scriptName)
+                .ToArray();
+            state.Save();
+
+            // アセットリフレッシュ & 再コンパイルを明示的に要求
+            AssetDatabase.Refresh();
+            CompilationPipeline.RequestScriptCompilation();
+#endif
+        }
 
         private static Type FindTypeByName(string fullName)
         {
@@ -297,8 +332,8 @@ namespace HikanyanLaboratory.MVPStateTool
                 if (type != null)
                     return type;
             }
+
             return null;
         }
-
     }
 }

@@ -28,11 +28,23 @@ MonoBehaviour:
   - scriptName: MainWindow
     prefab: {fileID: 0}
     isGenerated: 0
+  - scriptName: LoginWindow
+    prefab: {fileID: 0}
+    isGenerated: 0
+  - scriptName: TitleWindow
+    prefab: {fileID: 0}
+    isGenerated: 0
+  - scriptName: NewWindow
+    prefab: {fileID: 0}
+    isGenerated: 1
   ScreenGeneratorsByWindow:
   - ParentWindowName: None
     Screens: []
   - ParentWindowName: MainWindow
-    Screens: []
+    Screens:
+    - scriptName: NekoScreen
+      prefab: {fileID: 0}
+      isGenerated: 1
   - ParentWindowName: TitleWindow
     Screens: []
   - ParentWindowName: LoginWindow
